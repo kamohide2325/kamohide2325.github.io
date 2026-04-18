@@ -10,7 +10,6 @@ Amazon転売リサーチツール メインスクリプト
 
 import sys
 from pathlib import Path
-from datetime import datetime
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -120,10 +119,9 @@ def save_results(all_rows: list) -> str:
     ws2 = wb.create_sheet("利益あり商品")
     _write_sheet(ws2, profitable)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output = f"results_{timestamp}.xlsx"
-    wb.save(output)
-    return output
+    desktop = Path.home() / "Desktop" / "Amazon転売リサーチ結果.xlsx"
+    wb.save(desktop)
+    return str(desktop)
 
 
 HEADERS = [
