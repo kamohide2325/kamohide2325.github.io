@@ -20,7 +20,7 @@ from openpyxl.utils import get_column_letter
 
 from keepa_parser import parse_keepa_csv, KeepaProduct
 from price_fetcher import fetch_purchase_options, PurchaseOption
-from profit_calculator import calculate_profit, ProfitResult
+from profit_calculator import calculate_profit, ProfitResult, JUDGMENT_PROFITABLE, JUDGMENT_MARGINAL, JUDGMENT_LOSS
 import config
 
 
@@ -48,7 +48,14 @@ def main():
 
         options = fetch_purchase_options(product.jan)
         if not options:
-            print("  → 仕入れ候補なし")
+            print("  → 仕入れ候補なし（データなし）")
+            rows.append({
+                "product": product,
+                "best_option": None,
+                "all_options": [],
+                "profit": None,
+                "judgment": "データなし",
+            })
             continue
 
         best = options[0]  # 最安値
@@ -58,19 +65,19 @@ def main():
             category=product.category or "",
         )
 
-        status = "✓ 利益あり" if profit_result.is_profitable else "✗ 利益なし"
         print(f"  仕入れ最安: ¥{best.total:,} ({best.source} / {best.shop_name})")
-        print(f"  利益: ¥{profit_result.profit:,} ({profit_result.profit_rate}%) {status}")
+        print(f"  利益: ¥{profit_result.profit:,} ({profit_result.profit_rate}%) {profit_result.judgment}")
 
         rows.append({
             "product": product,
             "best_option": best,
             "all_options": options,
             "profit": profit_result,
+            "judgment": profit_result.judgment,
         })
 
-    profitable = [r for r in rows if r["profit"].is_profitable]
-    print(f"\n=== 完了: {len(profitable)} / {len(rows)} 商品が利益あり ===\n")
+    profitable = [r for r in rows if r.get("judgment") == JUDGMENT_PROFITABLE]
+    print(f"\n=== 完了: {len(profitable)} / {len(rows)} 商品が利益あり（粗利1000円以上） ===\n")
 
     output_path = save_results(profitable, rows)
     print(f"結果を保存しました: {output_path}")
@@ -80,14 +87,14 @@ def save_results(profitable_rows: list, all_rows: list) -> str:
     """Excelファイルに結果を保存"""
     wb = openpyxl.Workbook()
 
-    # シート1: 利益あり商品
+    # シート1: 利益あり商品（粗利1000円以上）
     ws1 = wb.active
     ws1.title = "利益あり商品"
-    _write_sheet(ws1, profitable_rows, highlight=True)
+    _write_sheet(ws1, profitable_rows)
 
-    # シート2: 全商品（参考）
+    # シート2: 全商品（判定別色分け）
     ws2 = wb.create_sheet("全商品")
-    _write_sheet(ws2, all_rows, highlight=False)
+    _write_sheet(ws2, all_rows)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output = f"results_{timestamp}.xlsx"
@@ -95,9 +102,18 @@ def save_results(profitable_rows: list, all_rows: list) -> str:
     return output
 
 
-def _write_sheet(ws, rows: list, highlight: bool):
+# 判定別の背景色
+JUDGMENT_COLORS = {
+    JUDGMENT_PROFITABLE: "E2EFDA",  # 緑
+    JUDGMENT_MARGINAL:   "FFF2CC",  # 黄
+    JUDGMENT_LOSS:       "FCE4D6",  # 赤
+    "データなし":          "F2F2F2",  # グレー
+}
+
+
+def _write_sheet(ws, rows: list):
     headers = [
-        "ASIN", "タイトル", "JAN", "カテゴリ", "月間購入数",
+        "判定", "ASIN", "タイトル", "JAN", "カテゴリ", "月間購入数",
         "Amazon価格", "仕入れ価格(合計)", "仕入れ先", "ショップ名",
         "参照手数料", "FBA手数料", "利益", "利益率(%)",
         "仕入れURL", "Amazon URL",
@@ -112,41 +128,42 @@ def _write_sheet(ws, rows: list, highlight: bool):
 
     for r, row in enumerate(rows, 2):
         p: KeepaProduct = row["product"]
-        opt: PurchaseOption = row["best_option"]
-        pr: ProfitResult = row["profit"]
+        opt: PurchaseOption = row.get("best_option")
+        pr: ProfitResult = row.get("profit")
+        judgment: str = row.get("judgment", "データなし")
 
         values = [
+            judgment,
             p.asin,
             p.title,
             p.jan,
             p.category,
             p.bought_last_month,
             p.amazon_price,
-            opt.total,
-            opt.source,
-            opt.shop_name,
-            pr.referral_fee,
-            pr.fba_fee,
-            pr.profit,
-            pr.profit_rate,
-            opt.url,
+            opt.total if opt else "",
+            opt.source if opt else "",
+            opt.shop_name if opt else "",
+            pr.referral_fee if pr else "",
+            pr.fba_fee if pr else "",
+            pr.profit if pr else "",
+            pr.profit_rate if pr else "",
+            opt.url if opt else "",
             f"https://www.amazon.co.jp/dp/{p.asin}",
         ]
 
+        bg_color = JUDGMENT_COLORS.get(judgment, "FFFFFF")
         for col, val in enumerate(values, 1):
             cell = ws.cell(row=r, column=col, value=val)
             cell.alignment = Alignment(horizontal="left")
+            cell.fill = PatternFill("solid", fgColor=bg_color)
 
-        if highlight and pr.is_profitable:
-            for col in range(1, len(headers) + 1):
-                ws.cell(row=r, column=col).fill = PatternFill("solid", fgColor="E2EFDA")
-
-    # 列幅自動調整
+    # 列幅調整
     for col in range(1, len(headers) + 1):
         ws.column_dimensions[get_column_letter(col)].width = 18
 
-    ws.column_dimensions["B"].width = 40  # タイトル列を広く
-    ws.column_dimensions["N"].width = 50  # URL列
+    ws.column_dimensions["A"].width = 28  # 判定列
+    ws.column_dimensions["C"].width = 40  # タイトル列
+    ws.column_dimensions["O"].width = 50  # 仕入れURL列
 
 
 if __name__ == "__main__":

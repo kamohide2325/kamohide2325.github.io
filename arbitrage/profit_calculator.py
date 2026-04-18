@@ -7,6 +7,11 @@ from dataclasses import dataclass
 import config
 
 
+JUDGMENT_PROFITABLE = "✅ 利益あり（粗利1000円以上）"
+JUDGMENT_MARGINAL   = "⚠️ 微利益"
+JUDGMENT_LOSS       = "❌ 赤字"
+
+
 @dataclass
 class ProfitResult:
     amazon_price: int          # Amazon販売価格
@@ -17,6 +22,7 @@ class ProfitResult:
     profit: int                # 純利益
     profit_rate: float         # 利益率（%）
     is_profitable: bool        # 最低基準を満たすか
+    judgment: str              # 判定ラベル
 
 
 # カテゴリ別参照手数料率（2024年度基準）
@@ -75,10 +81,14 @@ def calculate_profit(
     profit = amazon_price - total_cost
     profit_rate = (profit / amazon_price * 100) if amazon_price > 0 else 0.0
 
-    is_profitable = (
-        profit >= config.MIN_PROFIT_AMOUNT
-        and profit_rate >= config.MIN_PROFIT_RATE
-    )
+    if profit >= 1000:
+        judgment = JUDGMENT_PROFITABLE
+    elif profit > 0:
+        judgment = JUDGMENT_MARGINAL
+    else:
+        judgment = JUDGMENT_LOSS
+
+    is_profitable = (judgment == JUDGMENT_PROFITABLE)
 
     return ProfitResult(
         amazon_price=amazon_price,
@@ -89,4 +99,5 @@ def calculate_profit(
         profit=profit,
         profit_rate=round(profit_rate, 1),
         is_profitable=is_profitable,
+        judgment=judgment,
     )
