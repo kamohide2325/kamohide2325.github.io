@@ -152,7 +152,14 @@ def fetch_purchase_options(jan: str) -> list[PurchaseOption]:
     time.sleep(config.REQUEST_INTERVAL)
     results.extend(search_yahoo(jan))
     time.sleep(config.REQUEST_INTERVAL)
-
-    # 合計金額で昇順ソート
     results.sort(key=lambda x: x.total)
     return results
+
+
+def fetch_purchase_options_split(jan: str) -> tuple[list[PurchaseOption], list[PurchaseOption]]:
+    """楽天・Yahooを個別のリストで返す (rakuten_results, yahoo_results)"""
+    rakuten = search_rakuten(jan)
+    time.sleep(config.REQUEST_INTERVAL)
+    yahoo = search_yahoo(jan)
+    time.sleep(config.REQUEST_INTERVAL)
+    return rakuten, yahoo
