@@ -21,6 +21,20 @@ class PurchaseOption:
     jan: str
 
 
+# 除外キーワード（タイトルに含まれる場合はスキップ）
+EXCLUDE_KEYWORDS = ["中古", "未使用品", "ジャンク", "訳あり", "アウトレット"]
+
+
+def _is_used_item(item_name: str, shop_name: str = "") -> bool:
+    """中古・難あり商品かどうか判定"""
+    for kw in EXCLUDE_KEYWORDS:
+        if kw in item_name:
+            return True
+    if shop_name.startswith("auc-"):
+        return True
+    return False
+
+
 # ─────────────────────────────────────────────
 # 楽天市場
 # ─────────────────────────────────────────────
@@ -47,12 +61,16 @@ def search_rakuten(jan: str) -> list[PurchaseOption]:
     results = []
     for item in data.get("Items", []):
         it = item.get("Item", item)
+        item_name = it.get("itemName", "")
+        shop_name = it.get("shopName", "")
+        if _is_used_item(item_name, shop_name):
+            continue
         price = int(it.get("itemPrice", 0))
         shipping = _rakuten_shipping(it)
         results.append(PurchaseOption(
             source="rakuten",
-            shop_name=it.get("shopName", ""),
-            item_name=it.get("itemName", ""),
+            shop_name=shop_name,
+            item_name=item_name,
             price=price,
             shipping=shipping,
             total=price + shipping,
@@ -95,12 +113,15 @@ def search_yahoo(jan: str) -> list[PurchaseOption]:
 
     results = []
     for hit in data.get("hits", []):
+        item_name = hit.get("name", "")
+        if _is_used_item(item_name):
+            continue
         price = int(hit.get("price", 0))
         shipping = _yahoo_shipping(hit)
         results.append(PurchaseOption(
             source="yahoo",
             shop_name=hit.get("seller", {}).get("name", ""),
-            item_name=hit.get("name", ""),
+            item_name=item_name,
             price=price,
             shipping=shipping,
             total=price + shipping,
