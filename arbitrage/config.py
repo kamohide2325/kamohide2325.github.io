@@ -4,11 +4,11 @@
 
 # === 楽天市場 API ===
 # https://webservice.rakuten.co.jp/ で取得
-RAKUTEN_APP_ID = "YOUR_RAKUTEN_APP_ID"
+RAKUTEN_APP_ID = "9b07f603-1b86-48ad-ab6b-d08005640ac6"
 
 # === Yahoo!ショッピング API ===
 # https://developer.yahoo.co.jp/webapi/shopping/ で取得
-YAHOO_CLIENT_ID = "YOUR_YAHOO_CLIENT_ID"
+YAHOO_CLIENT_ID = "dmVyPTIwMjUwNyZpZD1RcXdQTFROa0s5Jmhhc2g9WmpFMk5ESmpOR1ZpWkdZeU1tUmxOQQ"
 
 # === Keepa API ===
 # https://keepa.com/#!api で取得（有料プラン必須）
