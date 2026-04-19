@@ -15,7 +15,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
-from keepa_parser import parse_keepa_csv, KeepaProduct, SIZE_LARGE, SIZE_XLARGE
+from keepa_parser import parse_keepa_csv, KeepaProduct
 from price_fetcher import fetch_purchase_options_split, PurchaseOption
 from profit_calculator import (
     calculate_profit, ProfitResult,
@@ -48,13 +48,7 @@ def main():
     print(f"  {len(products)} 商品を読み込みました")
 
     jan_products = [p for p in products if p.jan]
-    print(f"  うちJANコードあり: {len(jan_products)} 商品")
-
-    large_skipped = [p for p in jan_products if p.size_tier in (SIZE_LARGE, SIZE_XLARGE)]
-    jan_products  = [p for p in jan_products if p.size_tier not in (SIZE_LARGE, SIZE_XLARGE)]
-    if large_skipped:
-        print(f"  大型・特大型のため除外: {len(large_skipped)} 商品")
-    print(f"  リサーチ対象: {len(jan_products)} 商品\n")
+    print(f"  うちJANコードあり: {len(jan_products)} 商品\n")
 
     rows = []
     for i, product in enumerate(jan_products, 1):
