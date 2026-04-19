@@ -77,6 +77,8 @@ python3 main.py ~/Downloads/KeepaExport-YYYY-MM-DD.csv
 - タイトルに「中古」「未使用品」「ジャンク」「訳あり」「アウトレット」を含む商品
 - 楽天の `auc-` 系ショップ（オークション）
 
+楽天の検索はJANコードのみ（商品名での検索は行わない）。
+
 ---
 
 ## 利益計算式
@@ -127,3 +129,17 @@ pip3 install -r requirements.txt
 # APIキー設定
 open -e config.py
 ```
+
+---
+
+## 通常の使用手順（2回目以降）
+
+```bash
+# 1. 最新ファイルを取得
+cd ~/kamohide2325.github.io && git pull origin claude/amazon-arbitrage-finder-ZlPpF
+
+# 2. ツールを実行（ファイル名は実際のものに変更）
+cd arbitrage && python3 main.py ~/Downloads/KeepaExport-YYYY-MM-DD.csv
+```
+
+デスクトップの「せどりリサーチ結果.xlsx」を開いて結果を確認する。
