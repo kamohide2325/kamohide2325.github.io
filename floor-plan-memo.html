@@ -2,387 +2,314 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>間取り図メモ</title>
+  <title>間取り図メモ — 茂原 4DK 380万円</title>
   <style>
+    @page { size: A4 portrait; margin: 8mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      background: #f0f0f0;
-    }
-
-    /* ツールバー（印刷時は非表示） */
-    #toolbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      background: #2c2c2c;
-      color: #fff;
+      font-family: 'Meiryo', 'Hiragino Kaku Gothic ProN', Arial, sans-serif;
+      background: #ccc;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      font-size: 12px;
     }
 
-    #toolbar label {
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    #toolbar input[type="file"] { display: none; }
-
-    .btn {
-      padding: 5px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 13px;
-      background: #555;
-      color: #fff;
-      white-space: nowrap;
-    }
-    .btn:hover { background: #777; }
-    .btn.active { background: #0078d4; }
-
-    .sep { width: 1px; height: 28px; background: #555; margin: 0 4px; }
-
-    #colorPicker {
-      width: 32px; height: 28px;
-      border: none; border-radius: 4px;
-      cursor: pointer; padding: 2px;
-      background: none;
-    }
-
-    #penSize {
-      width: 60px;
-    }
-
-    #textInput {
-      position: fixed;
-      display: none;
-      z-index: 200;
-      border: 2px dashed #0078d4;
-      background: rgba(255,255,255,0.85);
-      font-size: 14px;
-      padding: 2px 4px;
-      min-width: 80px;
-      outline: none;
-      border-radius: 2px;
-    }
-
-    /* A4キャンバス領域 */
-    #canvasWrapper {
-      margin: 60px auto 20px;
-      width: 794px; /* A4 96dpi */
-      position: relative;
+    .a4 {
+      width: 210mm;
       background: #fff;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      padding: 8mm 9mm;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
     }
 
-    canvas {
+    /* ─── HEADER ─── */
+    .hd {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px double #333;
+      padding-bottom: 5px;
+      margin-bottom: 7px;
+    }
+    .hd-l h1 { font-size: 15px; }
+    .hd-l .sub { font-size: 9px; color: #666; margin-top: 2px; line-height: 1.6; }
+    .hd-r { font-size: 10px; line-height: 2; text-align: right; white-space: nowrap; }
+    .hd-r input {
+      border: none; border-bottom: 1px solid #aaa;
+      outline: none; font-size: 10px;
+      font-family: inherit; width: 100px;
+    }
+
+    /* ─── FLOOR PLANS ─── */
+    .plans {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 7px;
+    }
+    .plan {
+      flex: 1;
+      border: 1.5px solid #555;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .plan-title {
+      background: #333;
+      color: #fff;
+      text-align: center;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 3px 0;
+      letter-spacing: 3px;
+    }
+    .plan svg { display: block; width: 100%; }
+
+    /* ─── ROOM MEMO ─── */
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+    .rm {
+      border: 1px solid #bbb;
+      border-radius: 2px;
+      padding: 4px 5px;
+    }
+    .rm-hd {
+      font-size: 9px;
+      font-weight: bold;
+      color: #555;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 2px;
+      margin-bottom: 3px;
+    }
+    .rm textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      font-size: 11px;
+      line-height: 1.55;
+      background: transparent;
+    }
+
+    /* ─── GENERAL MEMO ─── */
+    .notes {
+      border: 1px solid #bbb;
+      border-radius: 2px;
+      padding: 4px 6px;
+    }
+    .notes-hd {
+      font-size: 10px;
+      font-weight: bold;
+      color: #444;
+      margin-bottom: 3px;
+    }
+    .nl {
       display: block;
-      cursor: crosshair;
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #ddd;
+      outline: none;
+      font-family: inherit;
+      font-size: 12px;
+      padding: 3px 2px;
+      background: transparent;
     }
 
-    /* 印刷スタイル */
     @media print {
-      @page {
-        size: A4 portrait;
-        margin: 0;
-      }
-
-      body { background: #fff; }
-
-      #toolbar, #textInput { display: none !important; }
-
-      #canvasWrapper {
-        margin: 0;
-        box-shadow: none;
-        width: 100%;
-      }
-
-      canvas {
-        width: 100% !important;
-        height: auto !important;
-      }
+      body { background: #fff; padding: 0; }
+      .a4 { box-shadow: none; }
     }
   </style>
 </head>
 <body>
+<div class="a4">
 
-<div id="toolbar">
-  <label>
-    <input type="file" id="fileInput" accept="image/*">
-    <span class="btn" onclick="document.getElementById('fileInput').click()">📁 画像を開く</span>
-  </label>
+  <!-- ══ HEADER ══ -->
+  <div class="hd">
+    <div class="hd-l">
+      <h1>売戸建住宅 &nbsp;茂原駅 1.9km &nbsp;／&nbsp; 4DK &nbsp;／&nbsp; 380万円</h1>
+      <div class="sub">
+        千葉県茂原市東郷1850-5　JR外房線 茂原　建物 73.52㎡　土地 116.84㎡　木造2階建　築1971年12月<br>
+        設備: 温水洗浄便座・IHクッキングヒーター・システムキッチン・床下収納・エアコン2台以上・都市ガス
+      </div>
+    </div>
+    <div class="hd-r">
+      内見日&ensp;<input type="text" placeholder="　年　月　日"><br>
+      担当者&ensp;<input type="text" placeholder=""><br>
+      同行者&ensp;<input type="text" placeholder="">
+    </div>
+  </div>
 
-  <div class="sep"></div>
+  <!-- ══ FLOOR PLANS ══ -->
+  <div class="plans">
 
-  <button class="btn active" id="btnPen" onclick="setTool('pen')">✏️ ペン</button>
-  <button class="btn" id="btnText" onclick="setTool('text')">T テキスト</button>
-  <button class="btn" id="btnLine" onclick="setTool('line')">／ 直線</button>
-  <button class="btn" id="btnArrow" onclick="setTool('arrow')">→ 矢印</button>
-  <button class="btn" id="btnRect" onclick="setTool('rect')">▭ 四角</button>
-  <button class="btn" id="btnEraser" onclick="setTool('eraser')">⬜ 消しゴム</button>
+    <!-- ── 2F ── -->
+    <div class="plan">
+      <div class="plan-title">2 階</div>
+      <svg viewBox="0 0 310 190" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="hc" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke="#bbb" stroke-width="1"/>
+          </pattern>
+        </defs>
 
-  <div class="sep"></div>
+        <!-- 外壁 -->
+        <rect x="3" y="3" width="304" height="152" fill="white" stroke="#222" stroke-width="3.5"/>
 
-  <label>色: <input type="color" id="colorPicker" value="#e00000"></label>
-  <label>太さ: <input type="range" id="penSize" min="1" max="20" value="2"></label>
-  <span id="sizeVal">2</span>px
+        <!-- 間仕切り縦線 -->
+        <line x1="158" y1="3" x2="158" y2="155" stroke="#333" stroke-width="2"/>
+        <line x1="238" y1="3" x2="238" y2="155" stroke="#333" stroke-width="2"/>
 
-  <div class="sep"></div>
+        <!-- 物入 左上 -->
+        <rect x="3" y="3" width="52" height="55" fill="url(#hc)" stroke="#444" stroke-width="1.5"/>
+        <text x="29" y="22" text-anchor="middle" font-size="8" fill="#555">物入</text>
 
-  <label>テキストサイズ: <input type="range" id="fontSize" min="10" max="48" value="16"></label>
-  <span id="fontSizeVal">16</span>px
+        <!-- 物入 右上 -->
+        <rect x="258" y="3" width="49" height="55" fill="url(#hc)" stroke="#444" stroke-width="1.5"/>
+        <text x="282" y="22" text-anchor="middle" font-size="8" fill="#555">物入</text>
 
-  <div class="sep"></div>
+        <!-- 洋室 6帖 -->
+        <text x="80" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#222">洋室</text>
+        <text x="80" y="110" text-anchor="middle" font-size="12" fill="#444">6帖</text>
 
-  <button class="btn" onclick="undo()">↩ 元に戻す</button>
-  <button class="btn" onclick="clearAll()">🗑 全消去</button>
-  <button class="btn" style="background:#0078d4;" onclick="window.print()">🖨 印刷</button>
-</div>
+        <!-- 洋室 3帖 -->
+        <text x="198" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#222">洋室</text>
+        <text x="198" y="108" text-anchor="middle" font-size="11" fill="#444">3帖</text>
 
-<div id="canvasWrapper">
-  <canvas id="canvas" width="794" height="1123"></canvas>
-</div>
+        <!-- 洋室 6.8帖 -->
+        <text x="274" y="90" text-anchor="middle" font-size="14" font-weight="bold" fill="#222">洋室</text>
+        <text x="274" y="108" text-anchor="middle" font-size="11" fill="#444">6.8帖</text>
 
-<input id="textInput" type="text" placeholder="テキストを入力...">
+        <!-- バルコニー1（点線） -->
+        <rect x="3" y="155" width="235" height="30" fill="#f7f7f7" stroke="#999" stroke-width="1" stroke-dasharray="5,3"/>
+        <text x="120" y="173" text-anchor="middle" font-size="9" fill="#777">バルコニー</text>
 
-<script>
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-  const A4_W = 794, A4_H = 1123;
+        <!-- バルコニー2（点線） -->
+        <rect x="238" y="155" width="69" height="30" fill="#f7f7f7" stroke="#999" stroke-width="1" stroke-dasharray="5,3"/>
+        <text x="272" y="173" text-anchor="middle" font-size="8" fill="#777">バルコニー</text>
 
-  let tool = 'pen';
-  let drawing = false;
-  let startX, startY;
-  let snapshot; // for shapes/lines
-  let history = [];
-  let bgImage = null;
+        <!-- 方角ラベル -->
+        <text x="155" y="188" text-anchor="middle" font-size="8" fill="#999">▲ 北　　　　南 ▼</text>
+      </svg>
+    </div>
 
-  const colorPicker = document.getElementById('colorPicker');
-  const penSizeSlider = document.getElementById('penSize');
-  const fontSizeSlider = document.getElementById('fontSize');
-  const textInput = document.getElementById('textInput');
+    <!-- ── 1F ── -->
+    <div class="plan">
+      <div class="plan-title">1 階</div>
+      <svg viewBox="0 0 310 215" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="hc2" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke="#bbb" stroke-width="1"/>
+          </pattern>
+        </defs>
 
-  penSizeSlider.addEventListener('input', () => {
-    document.getElementById('sizeVal').textContent = penSizeSlider.value;
-  });
-  fontSizeSlider.addEventListener('input', () => {
-    document.getElementById('fontSizeVal').textContent = fontSizeSlider.value;
-  });
+        <!-- 外壁 -->
+        <rect x="3" y="3" width="304" height="208" fill="white" stroke="#222" stroke-width="3.5"/>
 
-  // 初期背景（白）
-  function initCanvas() {
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, A4_W, A4_H);
-    if (bgImage) {
-      const scale = Math.min(A4_W / bgImage.width, A4_H / bgImage.height);
-      const w = bgImage.width * scale;
-      const h = bgImage.height * scale;
-      const x = (A4_W - w) / 2;
-      const y = (A4_H - h) / 2;
-      ctx.drawImage(bgImage, x, y, w, h);
-    }
-    saveHistory();
-  }
-  initCanvas();
+        <!-- 縦仕切り: 左列 | 中央 -->
+        <line x1="65" y1="3" x2="65" y2="211" stroke="#333" stroke-width="2"/>
+        <!-- 縦仕切り: 中央 | DK -->
+        <line x1="242" y1="3" x2="242" y2="211" stroke="#333" stroke-width="2"/>
+        <!-- 横仕切り（左列）: 物入|トイレ -->
+        <line x1="3" y1="53" x2="65" y2="53" stroke="#333" stroke-width="1.5"/>
+        <!-- 横仕切り（左列）: トイレ|玄関 -->
+        <line x1="3" y1="133" x2="65" y2="133" stroke="#333" stroke-width="1.5"/>
+        <!-- 横仕切り（中央上部）: 洗面|浴室の高さ違い対応 -->
+        <line x1="65" y1="68" x2="148" y2="68" stroke="#333" stroke-width="1.5"/>
+        <!-- 洗面と浴室の縦仕切り -->
+        <line x1="148" y1="3" x2="148" y2="100" stroke="#333" stroke-width="1.5"/>
+        <!-- 浴室下 / 押入上境界 -->
+        <line x1="148" y1="100" x2="242" y2="100" stroke="#333" stroke-width="1.5"/>
+        <!-- 押入下 / 和室上境界 -->
+        <line x1="65" y1="133" x2="242" y2="133" stroke="#333" stroke-width="1.5"/>
 
-  // 画像読み込み
-  document.getElementById('fileInput').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        bgImage = img;
-        history = [];
-        initCanvas();
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-  });
+        <!-- 物入 左上 -->
+        <rect x="3" y="3" width="62" height="50" fill="url(#hc2)" stroke="#444" stroke-width="1"/>
+        <text x="34" y="25" text-anchor="middle" font-size="8.5" fill="#555">物入</text>
 
-  function setTool(t) {
-    tool = t;
-    document.querySelectorAll('#toolbar .btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
-    canvas.style.cursor = t === 'eraser' ? 'cell' : t === 'text' ? 'text' : 'crosshair';
-  }
+        <!-- トイレ -->
+        <rect x="3" y="53" width="62" height="80" fill="white" stroke="#444" stroke-width="1"/>
+        <text x="34" y="96" text-anchor="middle" font-size="9.5" fill="#333">トイレ</text>
 
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = A4_W / rect.width;
-    const scaleY = A4_H / rect.height;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-      x: (clientX - rect.left) * scaleX,
-      y: (clientY - rect.top) * scaleY
-    };
-  }
+        <!-- 玄関 -->
+        <rect x="3" y="133" width="62" height="78" fill="white" stroke="#444" stroke-width="1"/>
+        <text x="34" y="175" text-anchor="middle" font-size="11" fill="#333">玄関</text>
+        <!-- 上がり框 -->
+        <line x1="3" y1="155" x2="65" y2="155" stroke="#555" stroke-width="1.5" stroke-dasharray="3,2"/>
 
-  function saveHistory() {
-    history.push(canvas.toDataURL());
-    if (history.length > 30) history.shift();
-  }
+        <!-- 洗面 -->
+        <rect x="65" y="3" width="83" height="65" fill="white" stroke="#444" stroke-width="1"/>
+        <text x="106" y="38" text-anchor="middle" font-size="10.5" fill="#333">洗面</text>
 
-  function undo() {
-    if (history.length <= 1) return;
-    history.pop();
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, A4_W, A4_H);
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = history[history.length - 1];
-  }
+        <!-- 浴室 -->
+        <rect x="148" y="3" width="94" height="97" fill="white" stroke="#444" stroke-width="1"/>
+        <text x="195" y="55" text-anchor="middle" font-size="12" fill="#333">浴室</text>
 
-  function clearAll() {
-    if (!confirm('書き込みをすべて消去しますか？')) return;
-    bgImage = null;
-    history = [];
-    initCanvas();
-  }
+        <!-- 押入 -->
+        <rect x="65" y="68" width="83" height="65" fill="url(#hc2)" stroke="#444" stroke-width="1"/>
+        <text x="106" y="103" text-anchor="middle" font-size="9" fill="#555">押入</text>
 
-  // ---- 描画イベント ----
-  canvas.addEventListener('mousedown', onDown);
-  canvas.addEventListener('mousemove', onMove);
-  canvas.addEventListener('mouseup', onUp);
-  canvas.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, { passive: false });
-  canvas.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
-  canvas.addEventListener('touchend', e => { e.preventDefault(); onUp(e); }, { passive: false });
+        <!-- 和室 6帖 -->
+        <rect x="65" y="133" width="177" height="78" fill="white" stroke="#444" stroke-width="1"/>
+        <text x="153" y="170" text-anchor="middle" font-size="16" font-weight="bold" fill="#222">和室</text>
+        <text x="153" y="188" text-anchor="middle" font-size="12" fill="#444">6帖</text>
 
-  function onDown(e) {
-    const pos = getPos(e);
+        <!-- DK 8.3帖 -->
+        <text x="272" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#222">DK</text>
+        <text x="272" y="118" text-anchor="middle" font-size="11" fill="#444">8.3帖</text>
 
-    if (tool === 'text') {
-      showTextInput(pos.x, pos.y);
-      return;
-    }
+        <!-- 方角ラベル -->
+        <text x="153" y="210" text-anchor="middle" font-size="8" fill="#999">▲ 北　　　　南 ▼</text>
+      </svg>
+    </div>
 
-    drawing = true;
-    startX = pos.x;
-    startY = pos.y;
+  </div><!-- /plans -->
 
-    if (tool === 'pen' || tool === 'eraser') {
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-    } else {
-      snapshot = ctx.getImageData(0, 0, A4_W, A4_H);
-    }
-  }
+  <!-- ══ ROOM MEMOS ══ -->
+  <div class="room-grid">
+    <div class="rm">
+      <div class="rm-hd">📍 1F 和室 6帖</div>
+      <textarea rows="3" placeholder="寸法・床・壁・窓・状態..."></textarea>
+    </div>
+    <div class="rm">
+      <div class="rm-hd">📍 1F DK 8.3帖</div>
+      <textarea rows="3" placeholder="キッチン・設備・収納・床..."></textarea>
+    </div>
+    <div class="rm">
+      <div class="rm-hd">📍 1F 水回り（浴室・洗面・トイレ）</div>
+      <textarea rows="3" placeholder="設備の状態・カビ・臭い..."></textarea>
+    </div>
+    <div class="rm">
+      <div class="rm-hd">📍 2F 洋室 6帖</div>
+      <textarea rows="3" placeholder="寸法・床・壁・窓・収納..."></textarea>
+    </div>
+    <div class="rm">
+      <div class="rm-hd">📍 2F 洋室 3帖</div>
+      <textarea rows="3" placeholder="寸法・用途・状態..."></textarea>
+    </div>
+    <div class="rm">
+      <div class="rm-hd">📍 2F 洋室 6.8帖</div>
+      <textarea rows="3" placeholder="寸法・床・壁・窓・収納..."></textarea>
+    </div>
+  </div>
 
-  function onMove(e) {
-    if (!drawing) return;
-    const pos = getPos(e);
+  <!-- ══ GENERAL MEMO ══ -->
+  <div class="notes">
+    <div class="notes-hd">総合メモ・印象・チェックポイント・修繕箇所など</div>
+    <input type="text" class="nl" placeholder="">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+    <input type="text" class="nl">
+  </div>
 
-    if (tool === 'pen') {
-      ctx.lineWidth = penSizeSlider.value;
-      ctx.strokeStyle = colorPicker.value;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    } else if (tool === 'eraser') {
-      ctx.lineWidth = parseInt(penSizeSlider.value) * 5;
-      ctx.strokeStyle = '#fff';
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    } else {
-      ctx.putImageData(snapshot, 0, 0);
-      drawShape(tool, startX, startY, pos.x, pos.y);
-    }
-  }
-
-  function onUp(e) {
-    if (!drawing) return;
-    drawing = false;
-    saveHistory();
-  }
-
-  function drawShape(type, x1, y1, x2, y2) {
-    ctx.strokeStyle = colorPicker.value;
-    ctx.fillStyle = colorPicker.value;
-    ctx.lineWidth = penSizeSlider.value;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    if (type === 'line') {
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-    } else if (type === 'arrow') {
-      drawArrow(x1, y1, x2, y2);
-    } else if (type === 'rect') {
-      ctx.beginPath();
-      ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-    }
-  }
-
-  function drawArrow(x1, y1, x2, y2) {
-    const headLen = 14 + parseInt(penSizeSlider.value) * 2;
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x2, y2);
-    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
-    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // ---- テキスト入力 ----
-  let textCanvasX, textCanvasY;
-
-  function showTextInput(cx, cy) {
-    textCanvasX = cx;
-    textCanvasY = cy;
-
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = rect.width / A4_W;
-    const scaleY = rect.height / A4_H;
-
-    textInput.style.display = 'block';
-    textInput.style.left = (rect.left + cx * scaleX) + 'px';
-    textInput.style.top = (rect.top + cy * scaleY + window.scrollY) + 'px';
-    textInput.style.fontSize = fontSizeSlider.value + 'px';
-    textInput.value = '';
-    textInput.focus();
-  }
-
-  textInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter') commitText();
-    if (e.key === 'Escape') textInput.style.display = 'none';
-  });
-
-  textInput.addEventListener('blur', () => {
-    if (textInput.value.trim()) commitText();
-    else textInput.style.display = 'none';
-  });
-
-  function commitText() {
-    const text = textInput.value.trim();
-    textInput.style.display = 'none';
-    if (!text) return;
-    const size = parseInt(fontSizeSlider.value);
-    ctx.font = `bold ${size}px sans-serif`;
-    ctx.fillStyle = colorPicker.value;
-    ctx.fillText(text, textCanvasX, textCanvasY + size);
-    saveHistory();
-  }
-</script>
+</div><!-- /a4 -->
 </body>
 </html>
