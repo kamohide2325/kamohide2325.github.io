@@ -111,11 +111,14 @@ def _make_row(no, product, rakuten_best, yahoo_best, judgment, pr_rakuten, pr_ya
 def save_results(all_rows: list) -> str:
     wb = openpyxl.Workbook()
 
+    # 赤字・データなしを除外
+    filtered = [r for r in all_rows if r["judgment"] not in (JUDGMENT_LOSS, JUDGMENT_NO_DATA)]
+
     ws1 = wb.active
     ws1.title = "全商品"
-    _write_sheet(ws1, all_rows)
+    _write_sheet(ws1, filtered)
 
-    profitable = [r for r in all_rows if r["judgment"] == JUDGMENT_PROFITABLE]
+    profitable = [r for r in filtered if r["judgment"] == JUDGMENT_PROFITABLE]
     ws2 = wb.create_sheet("利益あり商品")
     _write_sheet(ws2, profitable)
 
@@ -125,10 +128,10 @@ def save_results(all_rows: list) -> str:
 
 
 HEADERS = [
-    "No.", "商品名", "EAN", "ASIN", "Amazon現在価格",
+    "No.", "商品名", "判定", "EAN", "ASIN", "Amazon現在価格",
     "楽天最安値", "ヤフー最安値", "最安仕入先", "仕入最安値",
     "Amazon手数料", "FBA配送料",
-    "粗利(楽天仕入)", "粗利(ヤフー仕入)", "判定",
+    "粗利(楽天仕入)", "粗利(ヤフー仕入)",
     "楽天最安値ページURL", "ヤフー最安値ページURL",
 ]
 
@@ -174,6 +177,7 @@ def _write_sheet(ws, rows: list):
         values = [
             row["no"],
             p.title,
+            judgment,
             p.jan,
             p.asin,
             p.amazon_price,
@@ -185,7 +189,6 @@ def _write_sheet(ws, rows: list):
             fba_fee,
             pr_r.profit if pr_r else "",
             pr_y.profit if pr_y else "",
-            judgment,
             rb.url if rb else "",
             yb.url if yb else "",
         ]
@@ -199,7 +202,7 @@ def _write_sheet(ws, rows: list):
             cell.fill = row_fill
 
         # URLをハイパーリンク化
-        for col, url in [(15, rb.url if rb else None), (16, yb.url if yb else None)]:
+        for col, url in [(15, rb.url if rb else None), (16, yb.url if yb else None)]:  # noqa: E501
             if url:
                 cell = ws.cell(row=r, column=col)
                 cell.hyperlink = url
@@ -209,18 +212,18 @@ def _write_sheet(ws, rows: list):
     col_widths = {
         1: 6,   # No.
         2: 45,  # 商品名
-        3: 16,  # EAN
-        4: 14,  # ASIN
-        5: 14,  # Amazon価格
-        6: 12,  # 楽天最安値
-        7: 12,  # ヤフー最安値
-        8: 12,  # 最安仕入先
-        9: 12,  # 仕入最安値
-        10: 14, # Amazon手数料
-        11: 12, # FBA配送料
-        12: 16, # 粗利(楽天)
-        13: 16, # 粗利(ヤフー)
-        14: 30, # 判定
+        3: 30,  # 判定
+        4: 16,  # EAN
+        5: 14,  # ASIN
+        6: 14,  # Amazon価格
+        7: 12,  # 楽天最安値
+        8: 12,  # ヤフー最安値
+        9: 12,  # 最安仕入先
+        10: 12, # 仕入最安値
+        11: 14, # Amazon手数料
+        12: 12, # FBA配送料
+        13: 16, # 粗利(楽天)
+        14: 16, # 粗利(ヤフー)
         15: 45, # 楽天URL
         16: 45, # ヤフーURL
     }
