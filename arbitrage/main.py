@@ -55,7 +55,7 @@ def main():
         print(f"[{i}/{len(jan_products)}] {product.asin} / JAN:{product.jan}")
         print(f"  Amazon価格: ¥{product.amazon_price:,} | {product.title[:40]}")
 
-        rakuten_list, yahoo_list = fetch_purchase_options_split(product.jan)
+        rakuten_list, yahoo_list = fetch_purchase_options_split(product.jan, product.title)
 
         rakuten_best = rakuten_list[0] if rakuten_list else None
         yahoo_best   = yahoo_list[0]   if yahoo_list   else None
