@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>間取り図メモ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background: #f0f0f0;
+    }
+
+    /* ツールバー（印刷時は非表示） */
+    #toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: #2c2c2c;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      flex-wrap: wrap;
+    }
+
+    #toolbar label {
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    #toolbar input[type="file"] { display: none; }
+
+    .btn {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      background: #555;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #777; }
+    .btn.active { background: #0078d4; }
+
+    .sep { width: 1px; height: 28px; background: #555; margin: 0 4px; }
+
+    #colorPicker {
+      width: 32px; height: 28px;
+      border: none; border-radius: 4px;
+      cursor: pointer; padding: 2px;
+      background: none;
+    }
+
+    #penSize {
+      width: 60px;
+    }
+
+    #textInput {
+      position: fixed;
+      display: none;
+      z-index: 200;
+      border: 2px dashed #0078d4;
+      background: rgba(255,255,255,0.85);
+      font-size: 14px;
+      padding: 2px 4px;
+      min-width: 80px;
+      outline: none;
+      border-radius: 2px;
+    }
+
+    /* A4キャンバス領域 */
+    #canvasWrapper {
+      margin: 60px auto 20px;
+      width: 794px; /* A4 96dpi */
+      position: relative;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+
+    canvas {
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* 印刷スタイル */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      body { background: #fff; }
+
+      #toolbar, #textInput { display: none !important; }
+
+      #canvasWrapper {
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="toolbar">
+  <label>
+    <input type="file" id="fileInput" accept="image/*">
+    <span class="btn" onclick="document.getElementById('fileInput').click()">📁 画像を開く</span>
+  </label>
+
+  <div class="sep"></div>
+
+  <button class="btn active" id="btnPen" onclick="setTool('pen')">✏️ ペン</button>
+  <button class="btn" id="btnText" onclick="setTool('text')">T テキスト</button>
+  <button class="btn" id="btnLine" onclick="setTool('line')">／ 直線</button>
+  <button class="btn" id="btnArrow" onclick="setTool('arrow')">→ 矢印</button>
+  <button class="btn" id="btnRect" onclick="setTool('rect')">▭ 四角</button>
+  <button class="btn" id="btnEraser" onclick="setTool('eraser')">⬜ 消しゴム</button>
+
+  <div class="sep"></div>
+
+  <label>色: <input type="color" id="colorPicker" value="#e00000"></label>
+  <label>太さ: <input type="range" id="penSize" min="1" max="20" value="2"></label>
+  <span id="sizeVal">2</span>px
+
+  <div class="sep"></div>
+
+  <label>テキストサイズ: <input type="range" id="fontSize" min="10" max="48" value="16"></label>
+  <span id="fontSizeVal">16</span>px
+
+  <div class="sep"></div>
+
+  <button class="btn" onclick="undo()">↩ 元に戻す</button>
+  <button class="btn" onclick="clearAll()">🗑 全消去</button>
+  <button class="btn" style="background:#0078d4;" onclick="window.print()">🖨 印刷</button>
+</div>
+
+<div id="canvasWrapper">
+  <canvas id="canvas" width="794" height="1123"></canvas>
+</div>
+
+<input id="textInput" type="text" placeholder="テキストを入力...">
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const A4_W = 794, A4_H = 1123;
+
+  let tool = 'pen';
+  let drawing = false;
+  let startX, startY;
+  let snapshot; // for shapes/lines
+  let history = [];
+  let bgImage = null;
+
+  const colorPicker = document.getElementById('colorPicker');
+  const penSizeSlider = document.getElementById('penSize');
+  const fontSizeSlider = document.getElementById('fontSize');
+  const textInput = document.getElementById('textInput');
+
+  penSizeSlider.addEventListener('input', () => {
+    document.getElementById('sizeVal').textContent = penSizeSlider.value;
+  });
+  fontSizeSlider.addEventListener('input', () => {
+    document.getElementById('fontSizeVal').textContent = fontSizeSlider.value;
+  });
+
+  // 初期背景（白）
+  function initCanvas() {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, A4_W, A4_H);
+    if (bgImage) {
+      const scale = Math.min(A4_W / bgImage.width, A4_H / bgImage.height);
+      const w = bgImage.width * scale;
+      const h = bgImage.height * scale;
+      const x = (A4_W - w) / 2;
+      const y = (A4_H - h) / 2;
+      ctx.drawImage(bgImage, x, y, w, h);
+    }
+    saveHistory();
+  }
+  initCanvas();
+
+  // 画像読み込み
+  document.getElementById('fileInput').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        bgImage = img;
+        history = [];
+        initCanvas();
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  });
+
+  function setTool(t) {
+    tool = t;
+    document.querySelectorAll('#toolbar .btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+    canvas.style.cursor = t === 'eraser' ? 'cell' : t === 'text' ? 'text' : 'crosshair';
+  }
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = A4_W / rect.width;
+    const scaleY = A4_H / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function saveHistory() {
+    history.push(canvas.toDataURL());
+    if (history.length > 30) history.shift();
+  }
+
+  function undo() {
+    if (history.length <= 1) return;
+    history.pop();
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, A4_W, A4_H);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = history[history.length - 1];
+  }
+
+  function clearAll() {
+    if (!confirm('書き込みをすべて消去しますか？')) return;
+    bgImage = null;
+    history = [];
+    initCanvas();
+  }
+
+  // ---- 描画イベント ----
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onUp);
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); onDown(e); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, { passive: false });
+  canvas.addEventListener('touchend', e => { e.preventDefault(); onUp(e); }, { passive: false });
+
+  function onDown(e) {
+    const pos = getPos(e);
+
+    if (tool === 'text') {
+      showTextInput(pos.x, pos.y);
+      return;
+    }
+
+    drawing = true;
+    startX = pos.x;
+    startY = pos.y;
+
+    if (tool === 'pen' || tool === 'eraser') {
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+    } else {
+      snapshot = ctx.getImageData(0, 0, A4_W, A4_H);
+    }
+  }
+
+  function onMove(e) {
+    if (!drawing) return;
+    const pos = getPos(e);
+
+    if (tool === 'pen') {
+      ctx.lineWidth = penSizeSlider.value;
+      ctx.strokeStyle = colorPicker.value;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    } else if (tool === 'eraser') {
+      ctx.lineWidth = parseInt(penSizeSlider.value) * 5;
+      ctx.strokeStyle = '#fff';
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    } else {
+      ctx.putImageData(snapshot, 0, 0);
+      drawShape(tool, startX, startY, pos.x, pos.y);
+    }
+  }
+
+  function onUp(e) {
+    if (!drawing) return;
+    drawing = false;
+    saveHistory();
+  }
+
+  function drawShape(type, x1, y1, x2, y2) {
+    ctx.strokeStyle = colorPicker.value;
+    ctx.fillStyle = colorPicker.value;
+    ctx.lineWidth = penSizeSlider.value;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (type === 'line') {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    } else if (type === 'arrow') {
+      drawArrow(x1, y1, x2, y2);
+    } else if (type === 'rect') {
+      ctx.beginPath();
+      ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    }
+  }
+
+  function drawArrow(x1, y1, x2, y2) {
+    const headLen = 14 + parseInt(penSizeSlider.value) * 2;
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // ---- テキスト入力 ----
+  let textCanvasX, textCanvasY;
+
+  function showTextInput(cx, cy) {
+    textCanvasX = cx;
+    textCanvasY = cy;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = rect.width / A4_W;
+    const scaleY = rect.height / A4_H;
+
+    textInput.style.display = 'block';
+    textInput.style.left = (rect.left + cx * scaleX) + 'px';
+    textInput.style.top = (rect.top + cy * scaleY + window.scrollY) + 'px';
+    textInput.style.fontSize = fontSizeSlider.value + 'px';
+    textInput.value = '';
+    textInput.focus();
+  }
+
+  textInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') commitText();
+    if (e.key === 'Escape') textInput.style.display = 'none';
+  });
+
+  textInput.addEventListener('blur', () => {
+    if (textInput.value.trim()) commitText();
+    else textInput.style.display = 'none';
+  });
+
+  function commitText() {
+    const text = textInput.value.trim();
+    textInput.style.display = 'none';
+    if (!text) return;
+    const size = parseInt(fontSizeSlider.value);
+    ctx.font = `bold ${size}px sans-serif`;
+    ctx.fillStyle = colorPicker.value;
+    ctx.fillText(text, textCanvasX, textCanvasY + size);
+    saveHistory();
+  }
+</script>
+</body>
+</html>
