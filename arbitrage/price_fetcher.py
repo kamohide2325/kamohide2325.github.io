@@ -39,24 +39,12 @@ def _is_used_item(item_name: str, shop_name: str = "") -> bool:
 # 楽天市場
 # ─────────────────────────────────────────────
 
-def search_rakuten(jan: str, title: str = "") -> list[PurchaseOption]:
-    """楽天商品検索APIでJANコード検索。ヒットなければ商品名でフォールバック検索"""
-    results = _rakuten_search_by_keyword(jan, jan)
-
-    # JANでヒットしなかった場合、商品名の先頭40文字で再検索
-    if not results and title:
-        keyword = title[:40]
-        results = _rakuten_search_by_keyword(keyword, jan)
-
-    return results
-
-
-def _rakuten_search_by_keyword(keyword: str, jan: str) -> list[PurchaseOption]:
-    """楽天APIにキーワードで検索リクエストを送る"""
+def search_rakuten(jan: str) -> list[PurchaseOption]:
+    """楽天商品検索APIでJANコード検索"""
     url = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706"
     params = {
         "applicationId": config.RAKUTEN_APP_ID,
-        "keyword": keyword,
+        "keyword": jan,
         "hits": config.MAX_PURCHASE_CANDIDATES,
         "sort": "+itemPrice",
         "availability": 1,
@@ -67,7 +55,7 @@ def _rakuten_search_by_keyword(keyword: str, jan: str) -> list[PurchaseOption]:
         resp.raise_for_status()
         data = resp.json()
     except Exception as e:
-        print(f"  [Rakuten ERROR] keyword={keyword}: {e}")
+        print(f"  [Rakuten ERROR] JAN={jan}: {e}")
         return []
 
     results = []
@@ -168,9 +156,9 @@ def fetch_purchase_options(jan: str) -> list[PurchaseOption]:
     return results
 
 
-def fetch_purchase_options_split(jan: str, title: str = "") -> tuple[list[PurchaseOption], list[PurchaseOption]]:
+def fetch_purchase_options_split(jan: str) -> tuple[list[PurchaseOption], list[PurchaseOption]]:
     """楽天・Yahooを個別のリストで返す (rakuten_results, yahoo_results)"""
-    rakuten = search_rakuten(jan, title)
+    rakuten = search_rakuten(jan)
     time.sleep(config.REQUEST_INTERVAL)
     yahoo = search_yahoo(jan)
     time.sleep(config.REQUEST_INTERVAL)
