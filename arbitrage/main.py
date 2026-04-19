@@ -122,7 +122,7 @@ def save_results(all_rows: list) -> str:
     ws2 = wb.create_sheet("利益あり商品")
     _write_sheet(ws2, profitable)
 
-    desktop = Path.home() / "Desktop" / "Amazon転売リサーチ結果.xlsx"
+    desktop = Path.home() / "Desktop" / "せどりリサーチ結果.xlsx"
     wb.save(desktop)
     return str(desktop)
 
