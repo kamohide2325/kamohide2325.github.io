@@ -128,8 +128,8 @@ def save_results(all_rows: list) -> str:
 
 
 HEADERS = [
-    "No.", "商品名", "判定", "EAN", "ASIN", "Amazon現在価格",
-    "楽天最安値", "ヤフー最安値", "最安仕入先", "仕入最安値",
+    "No.", "ショップ名", "商品名", "判定", "ヤフー最安値", "楽天最安値", "ASIN",
+    "EAN", "Amazon現在価格", "最安仕入先", "仕入最安値",
     "Amazon手数料", "FBA配送料",
     "粗利(楽天仕入)", "粗利(ヤフー仕入)",
     "楽天最安値ページURL", "ヤフー最安値ページURL",
@@ -174,15 +174,18 @@ def _write_sheet(ws, rows: list):
         ref_fee = (pr_r or pr_y).referral_fee if (pr_r or pr_y) else ""
         fba_fee = (pr_r or pr_y).fba_fee      if (pr_r or pr_y) else ""
 
+        best_shop = (rb if rb and (not yb or rb.total <= yb.total) else yb)
+
         values = [
             row["no"],
+            best_shop.shop_name if best_shop else "",
             p.title,
             judgment,
-            p.jan,
-            p.asin,
-            p.amazon_price,
-            rb.total if rb else "",
             yb.total if yb else "",
+            rb.total if rb else "",
+            p.asin,
+            p.jan,
+            p.amazon_price,
             best_source,
             best_price,
             ref_fee,
@@ -202,7 +205,7 @@ def _write_sheet(ws, rows: list):
             cell.fill = row_fill
 
         # URLをハイパーリンク化
-        for col, url in [(15, rb.url if rb else None), (16, yb.url if yb else None)]:  # noqa: E501
+        for col, url in [(16, rb.url if rb else None), (17, yb.url if yb else None)]:
             if url:
                 cell = ws.cell(row=r, column=col)
                 cell.hyperlink = url
@@ -210,22 +213,23 @@ def _write_sheet(ws, rows: list):
 
     # 列幅設定
     col_widths = {
-        1: 6,   # No.
-        2: 45,  # 商品名
-        3: 30,  # 判定
-        4: 16,  # EAN
-        5: 14,  # ASIN
-        6: 14,  # Amazon価格
-        7: 12,  # 楽天最安値
-        8: 12,  # ヤフー最安値
-        9: 12,  # 最安仕入先
-        10: 12, # 仕入最安値
-        11: 14, # Amazon手数料
-        12: 12, # FBA配送料
-        13: 16, # 粗利(楽天)
-        14: 16, # 粗利(ヤフー)
-        15: 45, # 楽天URL
-        16: 45, # ヤフーURL
+        1:  6,  # No.
+        2:  20, # ショップ名
+        3:  45, # 商品名
+        4:  30, # 判定
+        5:  12, # ヤフー最安値
+        6:  12, # 楽天最安値
+        7:  14, # ASIN
+        8:  16, # EAN
+        9:  14, # Amazon価格
+        10: 12, # 最安仕入先
+        11: 12, # 仕入最安値
+        12: 14, # Amazon手数料
+        13: 12, # FBA配送料
+        14: 16, # 粗利(楽天)
+        15: 16, # 粗利(ヤフー)
+        16: 45, # 楽天URL
+        17: 45, # ヤフーURL
     }
     for col, width in col_widths.items():
         ws.column_dimensions[get_column_letter(col)].width = width
