@@ -40,15 +40,14 @@ def _is_used_item(item_name: str, shop_name: str = "") -> bool:
 # ─────────────────────────────────────────────
 
 def search_rakuten(jan: str) -> list[PurchaseOption]:
-    """
-    楽天 Product Search APIでJANコード検索。
-    IchibaItem APIよりJAN精度が高く、楽天内最安値を取得できる。
-    """
-    url = "https://app.rakuten.co.jp/services/api/Product/Search/20170426"
+    """楽天商品検索APIでJANコード検索"""
+    url = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706"
     params = {
         "applicationId": config.RAKUTEN_APP_ID,
         "keyword": jan,
         "hits": config.MAX_PURCHASE_CANDIDATES,
+        "sort": "+itemPrice",
+        "availability": 1,
     }
 
     try:
@@ -62,21 +61,20 @@ def search_rakuten(jan: str) -> list[PurchaseOption]:
     results = []
     for item in data.get("Items", []):
         it = item.get("Item", item)
-        product_name = it.get("productName", "")
-        if _is_used_item(product_name):
+        item_name = it.get("itemName", "")
+        shop_name = it.get("shopName", "")
+        if _is_used_item(item_name, shop_name):
             continue
-        min_price = int(it.get("minPrice", 0))
-        if min_price <= 0:
-            continue
-        product_url = it.get("productUrlPc") or it.get("productUrl", "")
+        price = int(it.get("itemPrice", 0))
+        shipping = _rakuten_shipping(it)
         results.append(PurchaseOption(
             source="rakuten",
-            shop_name="楽天市場",
-            item_name=product_name,
-            price=min_price,
-            shipping=0,
-            total=min_price,
-            url=product_url,
+            shop_name=shop_name,
+            item_name=item_name,
+            price=price,
+            shipping=shipping,
+            total=price + shipping,
+            url=it.get("itemUrl", ""),
             jan=jan,
         ))
     return results
