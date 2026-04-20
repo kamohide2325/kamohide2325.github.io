@@ -77,9 +77,9 @@ def main():
             category=product.category or "",
         ) if yahoo_best else None
 
-        # 最安仕入先の判定
+        # 最安仕入先の判定（同額の場合は楽天を優先）
         candidates = [(opt, pr) for opt, pr in [(rakuten_best, pr_rakuten), (yahoo_best, pr_yahoo)] if opt]
-        best_opt, best_pr = min(candidates, key=lambda x: x[0].total)
+        best_opt, best_pr = min(candidates, key=lambda x: (x[0].total, 0 if x[0].source == "rakuten" else 1))
 
         print(f"  楽天最安: {'¥' + f'{rakuten_best.total:,}' if rakuten_best else 'なし'}"
               f"  ヤフー最安: {'¥' + f'{yahoo_best.total:,}' if yahoo_best else 'なし'}")
@@ -128,7 +128,7 @@ def save_results(all_rows: list) -> str:
 
 
 HEADERS = [
-    "No.", "ショップ名", "商品名", "判定", "ヤフー最安値", "楽天最安値", "ASIN",
+    "No.", "ショップ名", "商品名", "判定", "楽天最安値", "ヤフー最安値", "ASIN",
     "EAN", "Amazon現在価格", "最安仕入先", "仕入最安値",
     "Amazon手数料", "FBA配送料",
     "粗利(楽天仕入)", "粗利(ヤフー仕入)",
@@ -159,7 +159,7 @@ def _write_sheet(ws, rows: list):
         pr_y: ProfitResult    = row.get("pr_yahoo")
         judgment: str         = row.get("judgment", JUDGMENT_NO_DATA)
 
-        # 最安仕入先
+        # 最安仕入先（同額の場合は楽天を優先）
         if rb and yb:
             best_source = "楽天" if rb.total <= yb.total else "ヤフー"
             best_price  = min(rb.total, yb.total)
@@ -181,8 +181,8 @@ def _write_sheet(ws, rows: list):
             best_shop.shop_name if best_shop else "",
             p.title,
             judgment,
-            yb.total if yb else "",
             rb.total if rb else "",
+            yb.total if yb else "",
             p.asin,
             p.jan,
             p.amazon_price,

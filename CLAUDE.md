@@ -43,8 +43,8 @@ python3 main.py ~/Downloads/KeepaExport-YYYY-MM-DD.csv
 | B | ショップ名 |
 | C | 商品名 |
 | D | 判定 |
-| E | ヤフー最安値 |
-| F | 楽天最安値 |
+| E | 楽天最安値 |
+| F | ヤフー最安値 |
 | G | ASIN |
 | H | EAN |
 | I | Amazon現在価格 |
