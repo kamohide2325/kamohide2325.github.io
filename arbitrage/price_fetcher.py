@@ -86,12 +86,12 @@ def search_rakuten(jan: str) -> list[PurchaseOption]:
     )
 
     for item in items[:config.MAX_PURCHASE_CANDIDATES]:
-        # 商品名・URL
+        # 商品名・URL（実際のHTML構造に合わせたセレクタ）
         name_el = (
-            item.select_one("h2 a")
-            or item.select_one(".content_title a")
-            or item.select_one("a.title")
-            or item.select_one(".title a")
+            item.select_one("a.title-link--3Yuev")
+            or item.select_one("h2 a[data-link='item']")
+            or item.select_one("h2 a")
+            or item.select_one("a[data-link='item']")
         )
         if not name_el:
             continue
@@ -100,22 +100,29 @@ def search_rakuten(jan: str) -> list[PurchaseOption]:
 
         # ショップ名
         shop_el = (
-            item.select_one(".merchant_name")
-            or item.select_one(".shop_name")
+            item.select_one("div.content.merchant a")
             or item.select_one(".merchant a")
+            or item.select_one(".merchant_name")
+            or item.select_one(".shop_name")
             or item.select_one(".dui-shopname")
         )
         shop_name = shop_el.get_text(strip=True) if shop_el else "楽天"
 
         # 価格
         price_el = (
-            item.select_one(".price .important")
+            item.select_one("div[class*='price--']")
+            or item.select_one(".price--3zUvK")
+            or item.select_one(".price .important")
             or item.select_one("span.important")
             or item.select_one(".dui-price-main")
             or item.select_one(".price")
         )
         price_text = price_el.get_text(strip=True) if price_el else ""
         price = _parse_price_text(price_text)
+
+        # 送料
+        free_ship_el = item.select_one("span[class*='free-shipping-label']")
+        shipping = 0 if free_ship_el else 0  # 送料込みで表示される場合が多い
 
         if not item_name or price <= 0:
             continue
@@ -127,8 +134,8 @@ def search_rakuten(jan: str) -> list[PurchaseOption]:
             shop_name=shop_name,
             item_name=item_name,
             price=price,
-            shipping=0,
-            total=price,
+            shipping=shipping,
+            total=price + shipping,
             url=item_url,
             jan=jan,
         ))
