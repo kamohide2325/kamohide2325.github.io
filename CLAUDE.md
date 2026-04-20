@@ -23,10 +23,14 @@ arbitrage/
 
 ```bash
 cd ~/kamohide2325.github.io/arbitrage
-python3 main.py ~/Downloads/KeepaExport-YYYY-MM-DD.csv
+python3 main.py 0421   # 月日4桁を入力（例: 4月21日 → 0421）
 ```
 
-出力: `~/Desktop/せどりリサーチ結果.xlsx`（実行のたびに上書き）
+- 入力する数字は **月日の4桁のみ**（例: 4月21日 → `0421`、12月3日 → `1203`）
+- `~/Downloads/KeepaExport-2026-04-21.csv` を自動で参照する
+- フルパスを直接指定することも可能: `python3 main.py ~/Downloads/KeepaExport-2026-04-21.csv`
+
+出力: `~/Desktop/せどりリサーチ結果_YYYYMMDD.xlsx`（実行日付付き、毎回新規作成）
 
 ---
 
@@ -138,8 +142,9 @@ open -e config.py
 # 1. 最新ファイルを取得
 cd ~/kamohide2325.github.io && git pull origin claude/amazon-arbitrage-finder-ZlPpF
 
-# 2. ツールを実行（ファイル名は実際のものに変更）
-cd arbitrage && python3 main.py ~/Downloads/KeepaExport-YYYY-MM-DD.csv
+# 2. ツールを実行（月日4桁を入力）
+cd arbitrage && python3 main.py 0421
 ```
 
-デスクトップの「せどりリサーチ結果.xlsx」を開いて結果を確認する。
+- Keepaからダウンロードした `KeepaExport-2026-04-21.csv` が `~/Downloads/` にあればOK
+- デスクトップの「せどりリサーチ結果_20260421.xlsx」を開いて結果を確認する

@@ -2,10 +2,11 @@
 Amazon転売リサーチツール メインスクリプト
 
 使い方:
-    python main.py keepa_export.csv
+    python main.py 0421        # 月日4桁 → ~/Downloads/KeepaExport-2026-04-21.csv を使用
+    python main.py path/to/file.csv  # フルパスも可
 
 出力:
-    results_YYYYMMDD_HHMMSS.xlsx
+    ~/Desktop/せどりリサーチ結果_YYYYMMDD.xlsx
 """
 
 import sys
@@ -34,13 +35,23 @@ JUDGMENT_COLORS = {
 }
 
 
+def _resolve_csv_path(arg: str) -> Path:
+    """4桁の月日（例: 0421）またはファイルパスを受け取りCSVのPathを返す"""
+    if arg.isdigit() and len(arg) == 4:
+        year = datetime.now().year
+        month, day = arg[:2], arg[2:]
+        return Path.home() / "Downloads" / f"KeepaExport-{year}-{month}-{day}.csv"
+    return Path(arg)
+
+
 def main():
     if len(sys.argv) < 2:
-        print("使い方: python main.py <keepa_export.csv>")
+        print("使い方: python3 main.py 0421  （月日4桁）")
+        print("        python3 main.py ~/Downloads/KeepaExport-2026-04-21.csv  （フルパスも可）")
         sys.exit(1)
 
-    csv_path = sys.argv[1]
-    if not Path(csv_path).exists():
+    csv_path = _resolve_csv_path(sys.argv[1])
+    if not csv_path.exists():
         print(f"ファイルが見つかりません: {csv_path}")
         sys.exit(1)
 
