@@ -1,2 +1,5 @@
 config.py
 arbitrage/config.py
+__pycache__/
+*.pyc
+*.pyo
