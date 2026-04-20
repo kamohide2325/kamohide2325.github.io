@@ -1,9 +1,13 @@
 """
-楽天市場・Yahoo!ショッピングのAPIで仕入れ価格を取得する
+楽天市場・Yahoo!ショッピングの価格を取得する
+楽天: 検索ページをスクレイピング（JANコードで直接検索）
+Yahoo: ショッピングAPIを使用
 """
 
+import re
 import time
 import requests
+from bs4 import BeautifulSoup
 from dataclasses import dataclass
 from typing import Optional
 import config
@@ -24,6 +28,20 @@ class PurchaseOption:
 # 除外キーワード（タイトルに含まれる場合はスキップ）
 EXCLUDE_KEYWORDS = ["中古", "未使用品", "ジャンク", "訳あり", "アウトレット"]
 
+# 楽天スクレイピング用ブラウザヘッダー
+RAKUTEN_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
+
 
 def _is_used_item(item_name: str, shop_name: str = "") -> bool:
     """中古・難あり商品かどうか判定"""
@@ -35,57 +53,90 @@ def _is_used_item(item_name: str, shop_name: str = "") -> bool:
     return False
 
 
+def _parse_price_text(text: str) -> int:
+    """価格テキストから数値を抽出（例: '¥1,234' → 1234）"""
+    digits = re.sub(r"[^\d]", "", text)
+    return int(digits) if digits else 0
+
+
 # ─────────────────────────────────────────────
-# 楽天市場
+# 楽天市場（スクレイピング）
 # ─────────────────────────────────────────────
 
 def search_rakuten(jan: str) -> list[PurchaseOption]:
-    """楽天商品検索APIでJANコード検索"""
-    url = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706"
-    params = {
-        "applicationId": config.RAKUTEN_APP_ID,
-        "keyword": jan,
-        "hits": config.MAX_PURCHASE_CANDIDATES,
-        "sort": "+itemPrice",
-        "availability": 1,
-    }
+    """楽天検索ページをスクレイピングしてJANコードで価格取得"""
+    url = f"https://search.rakuten.co.jp/search/mall/{jan}/?s=4&p=1"
 
     try:
-        resp = requests.get(url, params=params, timeout=10)
+        resp = requests.get(url, headers=RAKUTEN_HEADERS, timeout=15)
         resp.raise_for_status()
-        data = resp.json()
     except Exception as e:
         print(f"  [Rakuten ERROR] JAN={jan}: {e}")
         return []
 
+    soup = BeautifulSoup(resp.text, "html.parser")
     results = []
-    for item in data.get("Items", []):
-        it = item.get("Item", item)
-        item_name = it.get("itemName", "")
-        shop_name = it.get("shopName", "")
+
+    # 商品リストを取得（複数のセレクタを試みる）
+    items = (
+        soup.select("div.searchresultitem")
+        or soup.select("div.dui-card.searchresult")
+        or soup.select("li.product")
+        or []
+    )
+
+    for item in items[:config.MAX_PURCHASE_CANDIDATES]:
+        # 商品名・URL
+        name_el = (
+            item.select_one("h2 a")
+            or item.select_one(".content_title a")
+            or item.select_one("a.title")
+            or item.select_one(".title a")
+        )
+        if not name_el:
+            continue
+        item_name = name_el.get_text(strip=True)
+        item_url = name_el.get("href", "")
+
+        # ショップ名
+        shop_el = (
+            item.select_one(".merchant_name")
+            or item.select_one(".shop_name")
+            or item.select_one(".merchant a")
+            or item.select_one(".dui-shopname")
+        )
+        shop_name = shop_el.get_text(strip=True) if shop_el else "楽天"
+
+        # 価格
+        price_el = (
+            item.select_one(".price .important")
+            or item.select_one("span.important")
+            or item.select_one(".dui-price-main")
+            or item.select_one(".price")
+        )
+        price_text = price_el.get_text(strip=True) if price_el else ""
+        price = _parse_price_text(price_text)
+
+        if not item_name or price <= 0:
+            continue
         if _is_used_item(item_name, shop_name):
             continue
-        price = int(it.get("itemPrice", 0))
-        shipping = _rakuten_shipping(it)
+
         results.append(PurchaseOption(
             source="rakuten",
             shop_name=shop_name,
             item_name=item_name,
             price=price,
-            shipping=shipping,
-            total=price + shipping,
-            url=it.get("itemUrl", ""),
+            shipping=0,
+            total=price,
+            url=item_url,
             jan=jan,
         ))
+
+    if not results:
+        print(f"  [Rakuten] ヒットなし JAN={jan} (items={len(items)})")
+
     return results
-
-
-def _rakuten_shipping(item: dict) -> int:
-    """楽天の送料を推定（postageFlag=0が送料無料）"""
-    if item.get("postageFlag") == 0:
-        return 0
-    # 送料不明の場合はデフォルト送料を設定
-    return 550
 
 
 # ─────────────────────────────────────────────
@@ -134,7 +185,6 @@ def search_yahoo(jan: str) -> list[PurchaseOption]:
 def _yahoo_shipping(hit: dict) -> int:
     """Yahoo!の送料を推定"""
     shipping = hit.get("shipping", {})
-    # "CONDITION_FREE" or "FREE" = 送料無料
     if shipping.get("code") in ("CONDITION_FREE", "FREE") or shipping.get("name") == "送料無料":
         return 0
     charge = shipping.get("charge", 0)
