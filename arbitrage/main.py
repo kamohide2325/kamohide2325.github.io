@@ -9,6 +9,7 @@ Amazon転売リサーチツール メインスクリプト
 """
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import openpyxl
@@ -122,7 +123,8 @@ def save_results(all_rows: list) -> str:
     ws2 = wb.create_sheet("利益あり商品")
     _write_sheet(ws2, profitable)
 
-    desktop = Path.home() / "Desktop" / "せどりリサーチ結果.xlsx"
+    date_str = datetime.now().strftime("%Y%m%d")
+    desktop = Path.home() / "Desktop" / f"せどりリサーチ結果_{date_str}.xlsx"
     wb.save(desktop)
     return str(desktop)
 
