@@ -141,8 +141,8 @@ def save_results(all_rows: list) -> str:
 
 
 HEADERS = [
-    "No.", "ショップ名", "商品名", "判定", "楽天最安値", "ヤフー最安値", "ASIN",
-    "EAN", "Amazon現在価格", "最安仕入先", "仕入最安値",
+    "判定", "No.", "商品名", "Amazon現在価格", "楽天最安値", "ヤフー最安値", "ショップ名",
+    "ASIN", "EAN", "最安仕入先", "仕入最安値",
     "Amazon手数料", "FBA配送料",
     "粗利(楽天仕入)", "粗利(ヤフー仕入)",
     "楽天最安値ページURL", "ヤフー最安値ページURL",
@@ -190,15 +190,15 @@ def _write_sheet(ws, rows: list):
         best_shop = (rb if rb and (not yb or rb.total <= yb.total) else yb)
 
         values = [
-            row["no"],
-            best_shop.shop_name if best_shop else "",
-            p.title,
             judgment,
+            row["no"],
+            p.title,
+            p.amazon_price,
             rb.total if rb else "",
             yb.total if yb else "",
+            best_shop.shop_name if best_shop else "",
             p.asin,
             p.jan,
-            p.amazon_price,
             best_source,
             best_price,
             ref_fee,
@@ -226,15 +226,15 @@ def _write_sheet(ws, rows: list):
 
     # 列幅設定
     col_widths = {
-        1:  6,  # No.
-        2:  20, # ショップ名
+        1:  30, # 判定
+        2:  6,  # No.
         3:  45, # 商品名
-        4:  30, # 判定
-        5:  12, # ヤフー最安値
-        6:  12, # 楽天最安値
-        7:  14, # ASIN
-        8:  16, # EAN
-        9:  14, # Amazon価格
+        4:  14, # Amazon価格
+        5:  12, # 楽天最安値
+        6:  12, # ヤフー最安値
+        7:  20, # ショップ名
+        8:  14, # ASIN
+        9:  16, # EAN
         10: 12, # 最安仕入先
         11: 12, # 仕入最安値
         12: 14, # Amazon手数料
