@@ -1,5 +1,7 @@
 config.py
 arbitrage/config.py
+arbitrage/credentials.json
+arbitrage/token.json
 __pycache__/
 *.pyc
 *.pyo

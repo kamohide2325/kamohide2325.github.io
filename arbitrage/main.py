@@ -112,6 +112,18 @@ def main():
     output_path = save_results(rows)
     print(f"結果を保存しました: {output_path}")
 
+    # GoogleスプレッドシートにアップロードしてブラウザでOpen
+    try:
+        from google_uploader import upload_to_sheets, open_url
+        print("\nGoogleスプレッドシートにアップロード中...")
+        url = upload_to_sheets(output_path)
+        print(f"アップロード完了: {url}")
+        open_url(url)
+    except FileNotFoundError as e:
+        print(f"\n[Google連携スキップ] {e}")
+    except Exception as e:
+        print(f"\n[Google連携エラー] {e}")
+
 
 def _make_row(no, product, rakuten_best, yahoo_best, judgment, pr_rakuten, pr_yahoo):
     return {
