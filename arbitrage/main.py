@@ -93,6 +93,11 @@ def main():
         candidates = [(opt, pr) for opt, pr in [(rakuten_best, pr_rakuten), (yahoo_best, pr_yahoo)] if opt]
         best_opt, best_pr = min(candidates, key=lambda x: (x[0].total, 0 if x[0].source == "rakuten" else 1))
 
+        # 最安仕入値がAmazon価格の50%以下 → Amazon複数個販売の可能性があるため除外
+        if best_opt.total <= product.amazon_price * 0.5:
+            print(f"  → 除外（仕入値¥{best_opt.total:,}がAmazon価格¥{product.amazon_price:,}の50%以下）")
+            continue
+
         print(f"  楽天最安: {'¥' + f'{rakuten_best.total:,}' if rakuten_best else 'なし'}"
               f"  ヤフー最安: {'¥' + f'{yahoo_best.total:,}' if yahoo_best else 'なし'}")
         print(f"  粗利(楽天): {'¥' + f'{pr_rakuten.profit:,}' if pr_rakuten else '-'}"
