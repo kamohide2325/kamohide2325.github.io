@@ -8,29 +8,53 @@
 
 ```
 arbitrage/
-├── config.py            # APIキー・利益計算パラメータ（GitIgnore済み）
-├── keepa_parser.py      # KeepaのCSVを読み込む
-├── price_fetcher.py     # 楽天・Yahoo APIで仕入れ価格を取得
-├── profit_calculator.py # Amazon手数料を引いて純利益を計算
-├── main.py              # 実行スクリプト（Excelをデスクトップに出力）
-├── requirements.txt     # 依存ライブラリ
-└── MANUAL.md            # 詳細な手順書
+├── config.py             # APIキー・利益計算パラメータ（GitIgnore済み）
+├── credentials.json      # Google OAuth認証情報（GitIgnore済み）
+├── token.json            # Google認証トークン（自動生成・GitIgnore済み）
+├── keepa_parser.py       # KeepaのCSVを読み込む
+├── price_fetcher.py      # 楽天スクレイピング・Yahoo APIで仕入れ価格を取得
+├── profit_calculator.py  # Amazon手数料を引いて純利益を計算
+├── google_uploader.py    # GoogleスプレッドシートへExcelをアップロード
+├── main.py               # 実行スクリプト（Excel保存→Googleシート自動アップロード）
+├── requirements.txt      # 依存ライブラリ
+└── test_rakuten.py       # 楽天スクレイピング動作確認用
 ```
 
 ---
 
-## ツールの実行方法
+## 通常の使用手順（毎回）
 
 ```bash
-cd ~/kamohide2325.github.io/arbitrage
-python3 main.py 0421   # 月日4桁を入力（例: 4月21日 → 0421）
+cd ~/kamohide2325.github.io && git pull origin claude/amazon-arbitrage-finder-ZlPpF
+cd arbitrage && python3 main.py 0421
 ```
 
-- 入力する数字は **月日の4桁のみ**（例: 4月21日 → `0421`、12月3日 → `1203`）
+- `0421` の部分だけ実行する日付に変える（例: 5月3日 → `0503`）
 - `~/Downloads/KeepaExport-2026-04-21.csv` を自動で参照する
-- フルパスを直接指定することも可能: `python3 main.py ~/Downloads/KeepaExport-2026-04-21.csv`
+- デスクトップに `せどりリサーチ結果_20260421.xlsx` が保存され、Googleスプレッドシートがブラウザで自動的に開く
 
-出力: `~/Desktop/せどりリサーチ結果_YYYYMMDD.xlsx`（実行日付付き、毎回新規作成）
+---
+
+## Googleスプレッドシート自動アップロード
+
+### 初回のみ：ブラウザでGoogle認証が必要
+1. ツール実行後、ブラウザが自動で開く
+2. `kamohide2325@gmail.com` でログイン
+3. 「このアプリはGoogleで確認されていません」→「**続行**」をクリック
+4. 「許可」をクリック
+5. 以降は `token.json` が保存されるため認証不要
+
+### token.jsonを削除した場合（再認証が必要なとき）
+```bash
+rm -f ~/kamohide2325.github.io/arbitrage/token.json
+python3 main.py 0421
+```
+
+### Google Cloud設定（初回セットアップ済み）
+- プロジェクト: `sedori-list`
+- 有効API: Google Drive API
+- OAuthクライアント: デスクトップアプリ（`credentials.json`）
+- テストユーザー: `kamohide2325@gmail.com`
 
 ---
 
@@ -80,6 +104,7 @@ python3 main.py 0421   # 月日4桁を入力（例: 4月21日 → 0421）
 楽天・Yahoo両方で以下を除外：
 - タイトルに「中古」「未使用品」「ジャンク」「訳あり」「アウトレット」を含む商品
 - 楽天の `auc-` 系ショップ（オークション）
+- 最安仕入値がAmazon価格の50%以下の商品（Amazon複数個販売の可能性）
 
 楽天の検索はJANコードのみ（商品名での検索は行わない）。
 
@@ -118,7 +143,7 @@ KEEPA_API_KEY = "..."    # Keepa API（未使用・任意）
 
 ---
 
-## 環境セットアップ（初回のみ）
+## 環境セットアップ（新しいMacで最初から始める場合）
 
 ```bash
 # リポジトリ取得
@@ -130,21 +155,10 @@ git checkout claude/amazon-arbitrage-finder-ZlPpF
 cd arbitrage
 pip3 install -r requirements.txt
 
-# APIキー設定
+# APIキー設定（config.pyを編集）
 open -e config.py
+
+# Google認証情報を配置
+# Google Cloud Console（sedori-listプロジェクト）から
+# credentials.jsonをダウンロードして arbitrage/ フォルダに置く
 ```
-
----
-
-## 通常の使用手順（2回目以降）
-
-```bash
-# 1. 最新ファイルを取得
-cd ~/kamohide2325.github.io && git pull origin claude/amazon-arbitrage-finder-ZlPpF
-
-# 2. ツールを実行（月日4桁を入力）
-cd arbitrage && python3 main.py 0421
-```
-
-- Keepaからダウンロードした `KeepaExport-2026-04-21.csv` が `~/Downloads/` にあればOK
-- デスクトップの「せどりリサーチ結果_20260421.xlsx」を開いて結果を確認する
