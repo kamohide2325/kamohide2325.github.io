@@ -61,10 +61,8 @@ def _get_credentials() -> Credentials:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(str(creds_path), SCOPES)
-            auth_url, _ = flow.authorization_url(prompt="consent")
-            print(f"\n以下のURLをブラウザで開いてGoogleにログインしてください：\n{auth_url}\n")
-            subprocess.run(["open", auth_url])
-            creds = flow.run_local_server(port=0, open_browser=False)
+            creds = flow.run_local_server(port=8080, open_browser=True)
+            print("ブラウザでGoogleにログインして「許可」をクリックしてください。")
         with open(token_path, "w") as f:
             f.write(creds.to_json())
 
