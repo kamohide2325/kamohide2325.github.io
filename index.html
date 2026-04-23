@@ -1,13 +1,408 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Progate</title>
-    <link rel="stylesheet" href="stylesheet.css">
-  </head>
-  <body>
-    <h1 class="title">HTML & CSS の開発環境を用意しよう！</h1>
-    <p>自分のPCでWebページを開発する方法を学習しましょう</p>
-    <p>マンサンダルワーク中止です</p>
-  </body>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>千葉県 築古戸建投資 物件管理ツール</title>
+  <link rel="stylesheet" href="stylesheet.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <h1>千葉県 築古戸建投資<br>物件管理ツール</h1>
+      <p class="header-sub">450万円以下 ／ 駐車場あり ／ 再建築可 ／ 公共下水</p>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- 検索条件サマリー -->
+    <section class="card" id="criteria">
+      <h2>検索条件</h2>
+      <div class="criteria-grid">
+        <div class="criteria-must">
+          <h3>必須条件</h3>
+          <ul>
+            <li>エリア：千葉県（除外エリアを除く）</li>
+            <li>価格：<strong>450万円以下</strong></li>
+            <li>駐車場：<strong>あり</strong></li>
+            <li>再建築：<strong>可</strong></li>
+            <li>下水：<strong>公共下水のみ</strong></li>
+            <li>水道：公営水道</li>
+          </ul>
+        </div>
+        <div class="criteria-exclude">
+          <h3>除外条件</h3>
+          <ul>
+            <li>オーナーチェンジ物件</li>
+            <li>再建築不可物件</li>
+            <li>汲み取り（浄化槽・ボットン）</li>
+            <li>井戸水・自己水源</li>
+            <li>傾きあり</li>
+            <li>白アリ被害あり</li>
+          </ul>
+        </div>
+      </div>
+      <div class="excluded-areas">
+        <h3>除外エリア</h3>
+        <div class="tag-list">
+          <span class="tag-excluded">野田市</span>
+          <span class="tag-excluded">館山市</span>
+          <span class="tag-excluded">銚子市</span>
+          <span class="tag-excluded">勝浦市</span>
+          <span class="tag-excluded">鴨川市</span>
+          <span class="tag-excluded">印西市</span>
+          <span class="tag-excluded">南房総市</span>
+          <span class="tag-excluded">匝瑳市</span>
+          <span class="tag-excluded">いすみ市</span>
+          <span class="tag-excluded">その他の市街の町</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ポータルリンク集 -->
+    <section class="card" id="portals">
+      <h2>物件ポータル検索リンク</h2>
+      <p class="section-note">各リンクは千葉県・戸建て条件で設定済みです。開いた後、価格上限450万円・駐車場ありで絞り込んでください。</p>
+      <div class="portal-grid">
+        <a class="portal-card" href="https://www.rakumachi.jp/syuuekibukken/area/prefecture/dim1004/?pref%5B%5D=12&price_to=500" target="_blank" rel="noopener">
+          <div class="portal-name">楽待</div>
+          <div class="portal-desc">投資物件専門No.1<br>利回り・価格フィルター充実</div>
+          <div class="portal-action">千葉県 戸建て 500万円以下を見る →</div>
+        </a>
+        <a class="portal-card" href="https://www.kenbiya.com/pp8/s/chiba/" target="_blank" rel="noopener">
+          <div class="portal-name">健美家</div>
+          <div class="portal-desc">築古物件に強い<br>投資家向け情報豊富</div>
+          <div class="portal-action">千葉県 戸建賃貸一覧を見る →</div>
+        </a>
+        <a class="portal-card" href="https://suumo.jp/chukoikkodate/chiba/nj_305/" target="_blank" rel="noopener">
+          <div class="portal-name">SUUMO</div>
+          <div class="portal-desc">物件数最多<br>詳細条件検索が得意</div>
+          <div class="portal-action">千葉県 中古一戸建て 500万円以下を見る →</div>
+        </a>
+        <a class="portal-card" href="https://www.fudousan.or.jp/property/buy/12/area?ptm%5B%5D=0102" target="_blank" rel="noopener">
+          <div class="portal-name">不動産ジャパン</div>
+          <div class="portal-desc">全国宅建協会公式<br>地域密着型物件多数</div>
+          <div class="portal-action">千葉県 一戸建て売買を見る →</div>
+        </a>
+        <a class="portal-card" href="https://www.athome.co.jp/kodate/chuko/chiba/" target="_blank" rel="noopener">
+          <div class="portal-name">アットホーム</div>
+          <div class="portal-desc">仲介業者直接掲載多数<br>独自物件あり</div>
+          <div class="portal-action">千葉県 中古一戸建てを見る →</div>
+        </a>
+        <a class="portal-card" href="https://realestate.yahoo.co.jp/used/house/search/03/12/theme/70/" target="_blank" rel="noopener">
+          <div class="portal-name">Yahoo!不動産</div>
+          <div class="portal-desc">500万円以下特集<br>掘り出し物件あり</div>
+          <div class="portal-action">千葉県 500万円以下を見る →</div>
+        </a>
+      </div>
+      <div class="search-tips">
+        <h3>各サイトでの絞り込み手順</h3>
+        <ol>
+          <li>上記リンクをクリックしてサイトを開く</li>
+          <li>価格上限を <strong>450万円</strong> に設定</li>
+          <li>「駐車場あり」にチェック</li>
+          <li>除外エリアのチェックを外す（野田市、館山市、銚子市、勝浦市、鴨川市、印西市、南房総市、匝瑳市、いすみ市）</li>
+          <li>物件詳細で「再建築可」「公共下水」「公営水道」を確認</li>
+          <li>このページの登録フォームに物件情報を入力して管理する</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 物件登録フォーム -->
+    <section class="card" id="add-property">
+      <h2>物件を登録する</h2>
+      <form id="propertyForm">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>物件URL（ポータルサイトのリンク）</label>
+            <input type="url" id="f_url" placeholder="https://...">
+          </div>
+          <div class="form-group">
+            <label>所在地 <span class="required">*</span></label>
+            <input type="text" id="f_address" placeholder="例：千葉市中央区〇〇町1-2-3" required>
+          </div>
+          <div class="form-group">
+            <label>価格（万円） <span class="required">*</span></label>
+            <input type="number" id="f_price" placeholder="例：380" min="0" max="9999" required>
+          </div>
+          <div class="form-group">
+            <label>想定利回り（%）</label>
+            <input type="number" id="f_yield" placeholder="例：12.5" step="0.1" min="0">
+          </div>
+          <div class="form-group">
+            <label>築年数</label>
+            <input type="number" id="f_age" placeholder="例：35" min="0">
+          </div>
+          <div class="form-group">
+            <label>土地面積（㎡）</label>
+            <input type="number" id="f_landArea" placeholder="例：100" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>建物面積（㎡）</label>
+            <input type="number" id="f_buildingArea" placeholder="例：80" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label>間取り</label>
+            <input type="text" id="f_layout" placeholder="例：3DK">
+          </div>
+        </div>
+
+        <div class="checklist-form">
+          <h3>チェックリスト（確認できた項目にチェック）</h3>
+          <div class="check-grid">
+            <label class="check-item must-have">
+              <input type="checkbox" id="f_parking">
+              <span>駐車場あり</span>
+            </label>
+            <label class="check-item must-have">
+              <input type="checkbox" id="f_rebuild">
+              <span>再建築可</span>
+            </label>
+            <label class="check-item must-have">
+              <input type="checkbox" id="f_sewer">
+              <span>公共下水</span>
+            </label>
+            <label class="check-item must-have">
+              <input type="checkbox" id="f_water">
+              <span>公営水道</span>
+            </label>
+            <label class="check-item must-have">
+              <input type="checkbox" id="f_notOwner">
+              <span>OCでない（居住用売却）</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="f_noTilt">
+              <span>傾きなし</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" id="f_noTermite">
+              <span>白アリ被害なし</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>メモ・備考</label>
+          <textarea id="f_notes" rows="3" placeholder="気になる点や特記事項を入力..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">物件を登録する</button>
+      </form>
+    </section>
+
+    <!-- 物件一覧 -->
+    <section class="card" id="property-list">
+      <div class="section-header">
+        <h2>登録済み物件一覧 <span id="propertyCount" class="count-badge">0</span></h2>
+        <div class="section-actions">
+          <button class="btn-secondary" id="exportBtn">CSVエクスポート</button>
+          <button class="btn-danger" id="clearBtn">全て削除</button>
+        </div>
+      </div>
+      <div id="propertyTable">
+        <p class="empty-message">まだ物件が登録されていません。<br>上のフォームから物件を追加してください。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>千葉県 築古戸建投資 物件管理ツール ／ データはこのブラウザにのみ保存されます</p>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'chiba_bukken_v1';
+
+    function loadProperties() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch (e) { return []; }
+    }
+
+    function saveProperties(list) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function addProperty(p) {
+      const list = loadProperties();
+      p.id = Date.now().toString();
+      p.addedAt = new Date().toLocaleDateString('ja-JP');
+      list.push(p);
+      saveProperties(list);
+    }
+
+    function deleteProperty(id) {
+      saveProperties(loadProperties().filter(p => p.id !== id));
+    }
+
+    // スコア計算（合計100点）
+    function calcScore(p) {
+      const items = [
+        { key: 'hasParking',     w: 20 },
+        { key: 'canRebuild',     w: 30 },
+        { key: 'hasPublicSewer', w: 20 },
+        { key: 'hasPublicWater', w: 15 },
+        { key: 'notOwnerChange', w: 10 },
+        { key: 'noTilt',         w:  3 },
+        { key: 'noTermite',      w:  2 },
+      ];
+      const score = items.reduce((s, i) => s + (p[i.key] ? i.w : 0), 0);
+      const max   = items.reduce((s, i) => s + i.w, 0);
+      const pct   = Math.round(score / max * 100);
+      const grade = pct >= 95 ? 'S' : pct >= 80 ? 'A' : pct >= 60 ? 'B' : 'C';
+      const color = pct >= 95 ? '#16a34a' : pct >= 80 ? '#65a30d' : pct >= 60 ? '#d97706' : '#dc2626';
+      return { pct, grade, color };
+    }
+
+    function renderTable() {
+      const list = loadProperties();
+      document.getElementById('propertyCount').textContent = list.length;
+      const wrap = document.getElementById('propertyTable');
+
+      if (list.length === 0) {
+        wrap.innerHTML = '<p class="empty-message">まだ物件が登録されていません。<br>上のフォームから物件を追加してください。</p>';
+        return;
+      }
+
+      const icon = (v) => v ? '<span class="ok">○</span>' : '<span class="ng">×</span>';
+
+      const rows = list.map(p => {
+        const { grade, color, pct } = calcScore(p);
+        const addr = p.url
+          ? `<a href="${escHtml(p.url)}" target="_blank" rel="noopener">${escHtml(p.address)}</a>`
+          : escHtml(p.address);
+        return `
+          <tr>
+            <td><span class="grade-badge" style="background:${color}">${grade}&nbsp;${pct}%</span></td>
+            <td class="addr-cell">${addr}</td>
+            <td class="price-cell">${p.price ? p.price + '万円' : '—'}</td>
+            <td>${p.yield ? p.yield + '%' : '—'}</td>
+            <td>${p.age ? '築' + p.age + '年' : '—'}</td>
+            <td>${p.landArea ? p.landArea + '㎡' : '—'}</td>
+            <td>${p.buildingArea ? p.buildingArea + '㎡' : '—'}</td>
+            <td>${escHtml(p.layout || '—')}</td>
+            <td>${icon(p.hasParking)}</td>
+            <td>${icon(p.canRebuild)}</td>
+            <td>${icon(p.hasPublicSewer)}</td>
+            <td>${icon(p.hasPublicWater)}</td>
+            <td>${icon(p.notOwnerChange)}</td>
+            <td>${icon(p.noTilt)}</td>
+            <td>${icon(p.noTermite)}</td>
+            <td class="notes-cell">${escHtml(p.notes || '—')}</td>
+            <td class="date-cell">${p.addedAt}</td>
+            <td><button class="btn-delete" onclick="handleDelete('${p.id}')">削除</button></td>
+          </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `
+        <div class="table-scroll">
+          <table class="prop-table">
+            <thead>
+              <tr>
+                <th>評価</th>
+                <th>所在地</th>
+                <th>価格</th>
+                <th>利回り</th>
+                <th>築年数</th>
+                <th>土地</th>
+                <th>建物</th>
+                <th>間取り</th>
+                <th>駐車場</th>
+                <th>再建築</th>
+                <th>公共下水</th>
+                <th>公営水道</th>
+                <th>OC除外</th>
+                <th>傾きなし</th>
+                <th>白アリなし</th>
+                <th>メモ</th>
+                <th>登録日</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    function escHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // フォーム送信
+    document.getElementById('propertyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      addProperty({
+        url:           document.getElementById('f_url').value.trim(),
+        address:       document.getElementById('f_address').value.trim(),
+        price:         document.getElementById('f_price').value,
+        yield:         document.getElementById('f_yield').value,
+        age:           document.getElementById('f_age').value,
+        landArea:      document.getElementById('f_landArea').value,
+        buildingArea:  document.getElementById('f_buildingArea').value,
+        layout:        document.getElementById('f_layout').value.trim(),
+        hasParking:    document.getElementById('f_parking').checked,
+        canRebuild:    document.getElementById('f_rebuild').checked,
+        hasPublicSewer:document.getElementById('f_sewer').checked,
+        hasPublicWater:document.getElementById('f_water').checked,
+        notOwnerChange:document.getElementById('f_notOwner').checked,
+        noTilt:        document.getElementById('f_noTilt').checked,
+        noTermite:     document.getElementById('f_noTermite').checked,
+        notes:         document.getElementById('f_notes').value.trim(),
+      });
+      renderTable();
+      this.reset();
+      document.getElementById('property-list').scrollIntoView({ behavior: 'smooth' });
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = '登録しました！';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = '物件を登録する'; btn.disabled = false; }, 2000);
+    });
+
+    // 削除
+    function handleDelete(id) {
+      if (!confirm('この物件を削除しますか？')) return;
+      deleteProperty(id);
+      renderTable();
+    }
+
+    // 全削除
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      if (!confirm('登録済みの物件を全て削除しますか？この操作は元に戻せません。')) return;
+      saveProperties([]);
+      renderTable();
+    });
+
+    // CSVエクスポート
+    document.getElementById('exportBtn').addEventListener('click', function() {
+      const list = loadProperties();
+      if (!list.length) { alert('エクスポートする物件がありません。'); return; }
+      const headers = ['評価', '所在地', '価格(万円)', '利回り(%)', '築年数', '土地(㎡)', '建物(㎡)', '間取り', '駐車場', '再建築可', '公共下水', '公営水道', 'OC除外', '傾きなし', '白アリなし', 'メモ', '登録日', 'URL'];
+      const q = (v) => '"' + String(v || '').replace(/"/g, '""') + '"';
+      const yn = (v) => v ? '○' : '×';
+      const rows = list.map(p => {
+        const { grade, pct } = calcScore(p);
+        return [
+          `${grade}(${pct}%)`, p.address, p.price, p.yield, p.age,
+          p.landArea, p.buildingArea, p.layout,
+          yn(p.hasParking), yn(p.canRebuild), yn(p.hasPublicSewer),
+          yn(p.hasPublicWater), yn(p.notOwnerChange), yn(p.noTilt), yn(p.noTermite),
+          p.notes, p.addedAt, p.url
+        ].map(q).join(',');
+      });
+      const csv = '﻿' + [headers.map(q).join(','), ...rows].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'chiba_bukken_' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+    });
+
+    renderTable();
+  </script>
+</body>
 </html>
