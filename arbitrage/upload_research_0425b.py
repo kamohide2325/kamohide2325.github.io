@@ -57,84 +57,99 @@ def build_excel(path: Path):
         for col in range(2, 16):
             ws.cell(row=row, column=col).fill = fill
 
-    def data_row(row, vals, fill, url=None):
-        for col, val in enumerate(vals, 1):
+    def data_row(row, cols_1_13, url, note, fill):
+        for col, val in enumerate(cols_1_13, 1):
             c = ws.cell(row=row, column=col, value=val)
             c.fill = fill
             c.font = Font(size=10)
             c.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
             c.border = border
+        # 14列目：URL（クリッカブルリンク）
+        uc = ws.cell(row=row, column=14, value="🔗 開く" if url else "—")
         if url:
-            uc = ws.cell(row=row, column=14, value="🔗 開く")
             uc.hyperlink = url
             uc.font = Font(color="0070C0", underline="single", size=10)
-            uc.fill = fill
-            uc.alignment = Alignment(horizontal="center", vertical="center")
-            uc.border = border
+        else:
+            uc.font = Font(size=10, color="999999")
+        uc.fill = fill
+        uc.alignment = Alignment(horizontal="center", vertical="center")
+        uc.border = border
+        # 15列目：短評
+        nc = ws.cell(row=row, column=15, value=note)
+        nc.fill = fill
+        nc.font = Font(size=10)
+        nc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        nc.border = border
         ws.row_dimensions[row].height = 55
 
     # ===== 候補物件（旭市・要詳細確認） =====
     section_row(2, "【候補物件】条件合致の可能性あり（★は特に注目）", green_fill)
+
+    # row_data: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url, fill)
+    ASAHI = "https://www.kenbiya.com/pp0/s/chiba/asahi-shi/"
+    SAMMU = "https://www.kenbiya.com/pp0/s/chiba/sammu-shi/"
+    ICHIHARA = "https://www.kenbiya.com/pp0/s/chiba/ichihara-shi/"
 
     candidates = [
         (1,  "千葉県旭市", "要確認",
          298, "要確認", "不明", "743㎡", "不明", "1986年（築40年）",
          "2DK", "要確認", "不明", "詳細要確認",
          "土地743㎡と広大な土地が最大の魅力。2DKで間取りは小さいが土地値投資として有力。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightgreen),
+         ASAHI, lightgreen),
         (2,  "千葉県旭市桜井", "JR総武線 旭駅 徒歩88分（車必須）",
          320, "要確認", "不明", "465㎡", "67㎡", "1968年（築58年）",
          "4K", "要確認", "不明", "詳細要確認",
          "土地465㎡の広大な土地。旭駅88分は非現実的・車必須エリア。築58年の築古。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightblue),
+         ASAHI, lightblue),
         (3,  "千葉県旭市", "要確認",
          328, "要確認", "不明", "438㎡", "不明", "1979年（築47年）",
          "5DK", "要確認", "不明", "詳細要確認",
          "土地438㎡・5DK大型間取り。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightblue),
+         ASAHI, lightblue),
         (4,  "千葉県旭市", "要確認",
          330, "要確認", "不明", "204㎡", "不明", "1974年（築52年）",
          "5DK", "要確認", "不明", "詳細要確認",
          "土地204㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightblue),
+         ASAHI, lightblue),
         (5,  "千葉県旭市", "要確認",
          350, "要確認", "不明", "198㎡", "不明", "1974年（築52年）",
          "5DK", "要確認", "不明", "詳細要確認",
          "土地198㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightblue),
+         ASAHI, lightblue),
         (6,  "千葉県旭市", "要確認",
          358, "要確認", "不明", "164㎡", "不明", "1983年（築43年）",
          "5DK", "要確認", "不明", "詳細要確認",
          "土地164㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightblue),
+         ASAHI, lightblue),
         (7,  "千葉県旭市", "要確認",
          398, "要確認", "不明", "185㎡", "不明", "1994年（築32年）",
          "2DK", "要確認", "不明", "詳細要確認",
          "1994年築で比較的新しめ。土地185㎡。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightyellow),
+         ASAHI, lightyellow),
         (8,  "千葉県旭市", "要確認",
          400, "要確認", "不明", "140㎡", "87㎡", "1989年（築37年）",
          "1LDK", "要確認", "不明", "詳細要確認",
          "1989年築。1LDKは間取りが小さく賃付けに工夫が必要。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightyellow),
+         ASAHI, lightyellow),
         (9,  "千葉県山武市蓮沼イ", "要確認",
          298, "要確認", "不明", "330㎡超（100坪超）", "不明", "不明",
          "4DK", "あり（カーポート）", "平屋", "詳細要確認",
          "100坪超の広い土地・カーポートあり・家庭菜園付き。山武市は農村エリアでニーズ限定。水道・下水・OC・再建築可否は問合せ必須。",
-         None, lightblue),
+         SAMMU, lightblue),
         (10, "千葉県市原市南岩崎", "要確認",
          "不明", "14%（年収84万円）", "7.0万円", "不明", "不明", "不明",
          "不明", "不明", "不明", "詳細要確認",
          "2022年リフォーム済みで状態が良い可能性。年収84万円・利回り14%は魅力。価格・OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         None, lightgray),
+         ICHIHARA, lightgray),
     ]
 
     r = 3
     for row_data in candidates:
-        fill = row_data[-1]
-        vals = list(row_data[:-2])
-        url  = row_data[-2]
-        data_row(r, vals + ["", ""], fill or PatternFill(), url)
+        fill  = row_data[-1]
+        url   = row_data[-2]
+        note  = row_data[-3]
+        cols  = list(row_data[:-3])  # no 〜 status（13列）
+        data_row(r, cols, url, note, fill or PatternFill())
         r += 1
 
     # ===== 除外確定 =====
@@ -142,16 +157,30 @@ def build_excel(path: Path):
     section_row(r, "【除外確定】絶対除外条件に該当", red_fill)
     r += 1
 
+    # 除外列: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url)
     excluded_list = [
-        ("❌", "山武市埴谷", "JR東金線 日向駅 徒歩36分", "398万", "14.1%","—","78㎡","76㎡","1990年（築36年）","4DK","—","木造","上水が井戸・下水が浄化槽", "—", "上水が井戸のため絶対除外"),
+        ("❌", "山武市埴谷", "JR東金線 日向駅 徒歩36分", "398万", "14.1%","—","78㎡","76㎡","1990年（築36年）","4DK","—","木造","上水が井戸・下水が浄化槽", "上水が井戸のため絶対除外", None),
     ]
     for row_data in excluded_list:
-        for col, val in enumerate(row_data, 1):
+        url  = row_data[-1]
+        note = row_data[-2]
+        cols = list(row_data[:-2])
+        for col, val in enumerate(cols, 1):
             c = ws.cell(row=r, column=col, value=val)
             c.fill = lightred
             c.font = Font(size=10)
             c.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
             c.border = border
+        uc = ws.cell(row=r, column=14, value="—")
+        uc.fill = lightred
+        uc.font = Font(size=10, color="999999")
+        uc.alignment = Alignment(horizontal="center", vertical="center")
+        uc.border = border
+        nc = ws.cell(row=r, column=15, value=note)
+        nc.fill = lightred
+        nc.font = Font(size=10)
+        nc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        nc.border = border
         ws.row_dimensions[r].height = 30
         r += 1
 

@@ -57,20 +57,29 @@ def build_excel(path: Path):
         for col in range(2, 16):
             ws.cell(row=row, column=col).fill = fill
 
-    def data_row(row, vals, fill, url=None):
-        for col, val in enumerate(vals, 1):
+    def data_row(row, cols_1_13, url, note, fill):
+        for col, val in enumerate(cols_1_13, 1):
             c = ws.cell(row=row, column=col, value=val)
             c.fill = fill
             c.font = Font(size=10)
             c.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
             c.border = border
+        # 14列目：URL（クリッカブルリンク）
+        uc = ws.cell(row=row, column=14, value="🔗 開く" if url else "—")
         if url:
-            uc = ws.cell(row=row, column=14, value="🔗 開く")
             uc.hyperlink = url
             uc.font = Font(color="0070C0", underline="single", size=10)
-            uc.fill = fill
-            uc.alignment = Alignment(horizontal="center", vertical="center")
-            uc.border = border
+        else:
+            uc.font = Font(size=10, color="999999")
+        uc.fill = fill
+        uc.alignment = Alignment(horizontal="center", vertical="center")
+        uc.border = border
+        # 15列目：短評
+        nc = ws.cell(row=row, column=15, value=note)
+        nc.fill = fill
+        nc.font = Font(size=10)
+        nc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        nc.border = border
         ws.row_dimensions[row].height = 55
 
     # 候補物件
@@ -106,10 +115,12 @@ def build_excel(path: Path):
 
     r = 3
     for row_data in candidates:
-        fill = row_data[-1]
-        vals = list(row_data[:-2])
-        url  = row_data[-2]
-        data_row(r, vals + ["", ""], fill or PatternFill(), url)
+        # row_data: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url, fill)
+        fill  = row_data[-1]
+        url   = row_data[-2]
+        note  = row_data[-3]
+        cols  = list(row_data[:-3])  # no 〜 status（13列）
+        data_row(r, cols, url, note, fill or PatternFill())
         r += 1
 
     # 調査中断
@@ -130,7 +141,11 @@ def build_excel(path: Path):
          "https://www.kenbiya.com/pp8/s/chiba/mobara-shi/re_43697371kk/"),
     ]
     for row_data in interrupted:
-        data_row(r, list(row_data[:-1]) + [""], lightorange, row_data[-1])
+        # row_data: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url)
+        url  = row_data[-1]
+        note = row_data[-2]
+        cols = list(row_data[:-2])  # no 〜 status（13列）
+        data_row(r, cols, url, note, lightorange)
         r += 1
 
     # 除外確定
