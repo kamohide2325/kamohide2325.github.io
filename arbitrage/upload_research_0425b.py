@@ -30,7 +30,6 @@ def build_excel(path: Path):
     lightgreen   = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
     lightblue    = PatternFill(start_color="DEEAF1", end_color="DEEAF1", fill_type="solid")
     lightyellow  = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
-    lightgray    = PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
     lightorange  = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
     lightred     = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
 
@@ -82,69 +81,16 @@ def build_excel(path: Path):
         nc.border = border
         ws.row_dimensions[row].height = 55
 
-    # ===== 候補物件（旭市・要詳細確認） =====
-    section_row(2, "【候補物件】条件合致の可能性あり（★は特に注目）", green_fill)
+    # ===== 候補物件（個別URL確認済みのみ掲載） =====
+    section_row(2, "【候補物件】個別URLが確認できた物件のみ掲載", green_fill)
 
     # row_data: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url, fill)
-    # 旭市物件の個別URLはKenbiya・イエステーション共にログイン必須で取得不可
-    # → イエステーション旭店 戸建一覧ページを代替URLとして使用（※一覧ページ）
-    YES_ASAHI = "https://www.yes1.co.jp/asahi/office_search_result/house"  # イエステーション旭店 戸建一覧
-    SAMMU     = "https://www.kenbiya.com/pp0/s/chiba/sammu-shi/"
-    ICHIHARA  = "https://www.kenbiya.com/pp0/s/chiba/ichihara-shi/"
-    # 唯一確認できた個別URL（健美家 旭市二 中古戸建 No.4387203i7a）
-    ASAHI_CONFIRMED = "https://www.kenbiya.com/pp8/s/chiba/asahi-shi/re_4387203i7a/"
-
     candidates = [
-        (1,  "千葉県旭市", "要確認",
-         298, "要確認", "不明", "743㎡", "不明", "1986年（築40年）",
-         "2DK", "要確認", "不明", "詳細要確認",
-         "土地743㎡と広大な土地が最大の魅力。2DKで間取りは小さいが土地値投資として有力。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightgreen),
-        (2,  "千葉県旭市桜井", "JR総武線 旭駅 徒歩88分（車必須）",
-         320, "要確認", "不明", "465㎡", "67㎡", "1968年（築58年）",
-         "4K", "要確認", "不明", "詳細要確認",
-         "土地465㎡の広大な土地。旭駅88分は非現実的・車必須エリア。築58年の築古。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightblue),
-        (3,  "千葉県旭市", "要確認",
-         328, "要確認", "不明", "438㎡", "不明", "1979年（築47年）",
-         "5DK", "要確認", "不明", "詳細要確認",
-         "土地438㎡・5DK大型間取り。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightblue),
-        (4,  "千葉県旭市", "要確認",
-         330, "要確認", "不明", "204㎡", "不明", "1974年（築52年）",
-         "5DK", "要確認", "不明", "詳細要確認",
-         "土地204㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightblue),
-        (5,  "千葉県旭市", "要確認",
-         350, "要確認", "不明", "198㎡", "不明", "1974年（築52年）",
-         "5DK", "要確認", "不明", "詳細要確認",
-         "土地198㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightblue),
-        (6,  "千葉県旭市", "要確認",
-         358, "要確認", "不明", "164㎡", "不明", "1983年（築43年）",
-         "5DK", "要確認", "不明", "詳細要確認",
-         "土地164㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightblue),
-        (7,  "千葉県旭市二", "要確認",
+        (1, "千葉県旭市二", "要確認",
          398, "要確認", "不明", "185㎡", "不明", "1994年（築32年）",
          "2DK", "要確認", "不明", "詳細要確認",
-         "1994年築で比較的新しめ。土地185㎡。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI_CONFIRMED, lightyellow),
-        (8,  "千葉県旭市", "要確認",
-         400, "要確認", "不明", "140㎡", "87㎡", "1989年（築37年）",
-         "1LDK", "要確認", "不明", "詳細要確認",
-         "1989年築。1LDKは間取りが小さく賃付けに工夫が必要。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
-         YES_ASAHI, lightyellow),
-        (9,  "千葉県山武市蓮沼イ", "要確認",
-         298, "要確認", "不明", "330㎡超（100坪超）", "不明", "不明",
-         "4DK", "あり（カーポート）", "平屋", "詳細要確認",
-         "100坪超の広い土地・カーポートあり・家庭菜園付き。山武市は農村エリアでニーズ限定。水道・下水・OC・再建築可否は問合せ必須。",
-         SAMMU, lightblue),
-        (10, "千葉県市原市南岩崎", "要確認",
-         "不明", "14%（年収84万円）", "7.0万円", "不明", "不明", "不明",
-         "不明", "不明", "不明", "詳細要確認",
-         "2022年リフォーム済みで状態が良い可能性。年収84万円・利回り14%は魅力。価格・OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ICHIHARA, lightgray),
+         "1994年築で比較的新しめ（築古の中では良好）。土地185㎡。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
+         "https://www.kenbiya.com/pp8/s/chiba/asahi-shi/re_4387203i7a/", lightyellow),
     ]
 
     r = 3
@@ -156,20 +102,52 @@ def build_excel(path: Path):
         data_row(r, cols, url, note, fill or PatternFill())
         r += 1
 
-    # ===== 除外確定 =====
+    # ===== URL未取得のため非掲載 =====
     r += 1
-    section_row(r, "【除外確定】絶対除外条件に該当", red_fill)
+    section_row(r, "【URL未取得のため非掲載】個別ページURLが確認できなかった物件 → 健美家・イエステーション旭市店で手動確認してください", orange_fill)
     r += 1
 
-    # 除外列: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url)
+    no_url_list = [
+        ("—", "千葉県旭市（土地743㎡）", "要確認", "298万", "要確認", "不明", "743㎡", "不明", "1986年（築40年）", "2DK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市桜井（土地465㎡）", "旭駅 徒歩88分（車必須）", "320万", "要確認", "不明", "465㎡", "67㎡", "1968年（築58年）", "4K", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市（土地438㎡）", "要確認", "328万", "要確認", "不明", "438㎡", "不明", "1979年（築47年）", "5DK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市（土地204㎡）", "要確認", "330万", "要確認", "不明", "204㎡", "不明", "1974年（築52年）", "5DK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市（土地198㎡）", "要確認", "350万", "要確認", "不明", "198㎡", "不明", "1974年（築52年）", "5DK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市（土地164㎡）", "要確認", "358万", "要確認", "不明", "164㎡", "不明", "1983年（築43年）", "5DK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県旭市（土地140㎡）", "要確認", "400万", "要確認", "不明", "140㎡", "87㎡", "1989年（築37年）", "1LDK", "要確認", "不明", "URL未取得"),
+        ("—", "千葉県山武市蓮沼イ（100坪超）", "要確認", "298万", "要確認", "不明", "330㎡超", "不明", "不明", "4DK", "あり（カーポート）", "平屋", "URL未取得"),
+    ]
+    for row_data in no_url_list:
+        for col, val in enumerate(row_data, 1):
+            c = ws.cell(row=r, column=col, value=val)
+            c.fill = lightorange
+            c.font = Font(size=10)
+            c.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+            c.border = border
+        uc = ws.cell(row=r, column=14, value="—")
+        uc.fill = lightorange
+        uc.font = Font(size=10, color="999999")
+        uc.alignment = Alignment(horizontal="center", vertical="center")
+        uc.border = border
+        nc = ws.cell(row=r, column=15, value="個別URLが確認できなかったため非掲載。旭市物件はイエステーション旭市店（yes1.co.jp/asahi）にまとめて問合せ推奨。")
+        nc.fill = lightorange
+        nc.font = Font(size=10)
+        nc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        nc.border = border
+        ws.row_dimensions[r].height = 40
+        r += 1
+
+    # ===== 除外確定 =====
+    r += 1
+    section_row(r, "【除外確定】絶対除外条件に該当 / 予算超過", red_fill)
+    r += 1
+
     excluded_list = [
-        ("❌", "山武市埴谷", "JR東金線 日向駅 徒歩36分", "398万", "14.1%","—","78㎡","76㎡","1990年（築36年）","4DK","—","木造","上水が井戸・下水が浄化槽", "上水が井戸のため絶対除外", None),
+        ("❌", "千葉県山武市埴谷", "JR東金線 日向駅 徒歩36分", "398万", "14.1%", "—", "78㎡", "76㎡", "1990年（築36年）", "4DK", "—", "木造", "上水が井戸", "上水が井戸のため絶対除外"),
+        ("❌", "千葉県市原市（椎津）", "最寄り駅徒歩圏", "〜798万", "14.73%", "約9.8万円", "不明", "不明", "不明", "不明", "不明", "不明", "予算超過", "推定価格〜798万円で400万円予算超過のため除外（個別URL: re_43387982o9）"),
     ]
     for row_data in excluded_list:
-        url  = row_data[-1]
-        note = row_data[-2]
-        cols = list(row_data[:-2])
-        for col, val in enumerate(cols, 1):
+        for col, val in enumerate(row_data, 1):
             c = ws.cell(row=r, column=col, value=val)
             c.fill = lightred
             c.font = Font(size=10)
@@ -180,11 +158,6 @@ def build_excel(path: Path):
         uc.font = Font(size=10, color="999999")
         uc.alignment = Alignment(horizontal="center", vertical="center")
         uc.border = border
-        nc = ws.cell(row=r, column=15, value=note)
-        nc.fill = lightred
-        nc.font = Font(size=10)
-        nc.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
-        nc.border = border
         ws.row_dimensions[r].height = 30
         r += 1
 
@@ -199,12 +172,11 @@ def build_excel(path: Path):
         ("■ 調査情報", ""),
         ("調査日",     "2026年4月25日（第2回）"),
         ("調査サイト", "楽待・健美家・HOME'S投資（Google検索キャッシュ経由 / イエステーション旭市店も参照）"),
-        ("備考",       "各サイトへの直接アクセスが403エラーのため検索キャッシュで収集。タイムアウトにより調査が途中で打ち切られました。"),
+        ("備考",       "各サイトへの直接アクセスが403エラーのため検索キャッシュで収集。個別URLが確認できた物件のみ掲載（ポリシーに従い一覧ページURLは使用しない）。"),
         ("", ""),
         ("■ 今回の特徴", ""),
-        ("",           "旭市に低価格・広大土地の物件が集中して発見されました（298万〜400万）。"),
-        ("",           "ただし旭市物件はOC・水道・下水・再建築可否等の詳細がほとんど未確認のため、"),
-        ("",           "健美家またはイエステーション旭市店へ一括問合せを推奨します。"),
+        ("",           "旭市に低価格・広大土地の物件が多数確認されましたが、個別URLを取得できなかったため非掲載。"),
+        ("",           "旭市物件のURLはイエステーション旭市店（yes1.co.jp/asahi）から直接問合せることを強く推奨します。"),
         ("", ""),
         ("■ 検索条件", ""),
         ("予算",         "400万円以下"),
@@ -215,20 +187,19 @@ def build_excel(path: Path):
         ("絶対除外条件", "OC / 再建築不可 / 井戸水 / 汲み取り / 傾き / 白アリ"),
         ("", ""),
         ("■ 色の意味", ""),
-        ("緑（薄）",    "★最注目候補（土地743㎡・298万）"),
-        ("青（薄）",    "候補物件"),
-        ("黄（薄）",    "条件保留・要確認"),
-        ("グレー",      "詳細不明・要問合せ"),
-        ("赤（薄）",    "除外確定"),
+        ("黄（薄）",    "候補物件（個別URL確認済み）"),
+        ("橙（薄）",    "URL未取得のため非掲載 → 手動で要確認"),
+        ("赤（薄）",    "除外確定（除外条件に該当 / 予算超過）"),
         ("", ""),
         ("■ 次のアクション（優先順）", ""),
-        ("優先①", "物件1（旭市298万・土地743㎡）→ 広大土地が魅力。健美家またはイエステーション旭市で詳細確認"),
-        ("優先②", "物件2（旭市桜井320万・土地465㎡）→ 同上"),
-        ("優先③", "物件10（市原市南岩崎・利回り14%・リフォーム済み）→ 価格を確認して問合せ"),
+        ("優先①", "物件1（旭市二 398万 1994年築）→ 健美家 re_4387203i7a で詳細確認・問合せ"),
+        ("優先②", "旭市 298〜400万の7件（URL未取得）→ イエステーション旭市店にまとめて問合せ"),
+        ("優先③", "山武市蓮沼 298万（URL未取得）→ 健美家の山武市ページを直接確認"),
         ("全物件共通", "OC非該当・水道公営・下水汲み取りでない・再建築可・駐車場あり を必ず問合せで確認"),
         ("", ""),
-        ("■ 旭市 問合せ先候補", ""),
-        ("イエステーション旭市店", "旭市内複数物件を掲載。まとめて問合せ可能。"),
+        ("■ 旭市 問合せ先", ""),
+        ("イエステーション旭市店", "https://www.yes1.co.jp/asahi/office_search_result/house"),
+        ("健美家 旭市", "https://www.kenbiya.com/pp0/s/chiba/asahi-shi/"),
     ]
     for i, (k, v) in enumerate(notes, 1):
         ck = ws2.cell(row=i, column=1, value=k)
