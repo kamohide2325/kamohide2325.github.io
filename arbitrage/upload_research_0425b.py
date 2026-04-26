@@ -86,51 +86,55 @@ def build_excel(path: Path):
     section_row(2, "【候補物件】条件合致の可能性あり（★は特に注目）", green_fill)
 
     # row_data: (no, address, station, price, yield, rent, land, bldg, built, layout, parking, structure, status, note, url, fill)
-    ASAHI = "https://www.kenbiya.com/pp0/s/chiba/asahi-shi/"
-    SAMMU = "https://www.kenbiya.com/pp0/s/chiba/sammu-shi/"
-    ICHIHARA = "https://www.kenbiya.com/pp0/s/chiba/ichihara-shi/"
+    # 旭市物件の個別URLはKenbiya・イエステーション共にログイン必須で取得不可
+    # → イエステーション旭店 戸建一覧ページを代替URLとして使用（※一覧ページ）
+    YES_ASAHI = "https://www.yes1.co.jp/asahi/office_search_result/house"  # イエステーション旭店 戸建一覧
+    SAMMU     = "https://www.kenbiya.com/pp0/s/chiba/sammu-shi/"
+    ICHIHARA  = "https://www.kenbiya.com/pp0/s/chiba/ichihara-shi/"
+    # 唯一確認できた個別URL（健美家 旭市二 中古戸建 No.4387203i7a）
+    ASAHI_CONFIRMED = "https://www.kenbiya.com/pp8/s/chiba/asahi-shi/re_4387203i7a/"
 
     candidates = [
         (1,  "千葉県旭市", "要確認",
          298, "要確認", "不明", "743㎡", "不明", "1986年（築40年）",
          "2DK", "要確認", "不明", "詳細要確認",
-         "土地743㎡と広大な土地が最大の魅力。2DKで間取りは小さいが土地値投資として有力。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightgreen),
+         "土地743㎡と広大な土地が最大の魅力。2DKで間取りは小さいが土地値投資として有力。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightgreen),
         (2,  "千葉県旭市桜井", "JR総武線 旭駅 徒歩88分（車必須）",
          320, "要確認", "不明", "465㎡", "67㎡", "1968年（築58年）",
          "4K", "要確認", "不明", "詳細要確認",
-         "土地465㎡の広大な土地。旭駅88分は非現実的・車必須エリア。築58年の築古。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightblue),
+         "土地465㎡の広大な土地。旭駅88分は非現実的・車必須エリア。築58年の築古。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightblue),
         (3,  "千葉県旭市", "要確認",
          328, "要確認", "不明", "438㎡", "不明", "1979年（築47年）",
          "5DK", "要確認", "不明", "詳細要確認",
-         "土地438㎡・5DK大型間取り。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightblue),
+         "土地438㎡・5DK大型間取り。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightblue),
         (4,  "千葉県旭市", "要確認",
          330, "要確認", "不明", "204㎡", "不明", "1974年（築52年）",
          "5DK", "要確認", "不明", "詳細要確認",
-         "土地204㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightblue),
+         "土地204㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightblue),
         (5,  "千葉県旭市", "要確認",
          350, "要確認", "不明", "198㎡", "不明", "1974年（築52年）",
          "5DK", "要確認", "不明", "詳細要確認",
-         "土地198㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightblue),
+         "土地198㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightblue),
         (6,  "千葉県旭市", "要確認",
          358, "要確認", "不明", "164㎡", "不明", "1983年（築43年）",
          "5DK", "要確認", "不明", "詳細要確認",
-         "土地164㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightblue),
-        (7,  "千葉県旭市", "要確認",
+         "土地164㎡・5DK。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightblue),
+        (7,  "千葉県旭市二", "要確認",
          398, "要確認", "不明", "185㎡", "不明", "1994年（築32年）",
          "2DK", "要確認", "不明", "詳細要確認",
          "1994年築で比較的新しめ。土地185㎡。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightyellow),
+         ASAHI_CONFIRMED, lightyellow),
         (8,  "千葉県旭市", "要確認",
          400, "要確認", "不明", "140㎡", "87㎡", "1989年（築37年）",
          "1LDK", "要確認", "不明", "詳細要確認",
-         "1989年築。1LDKは間取りが小さく賃付けに工夫が必要。OC・水道・下水・再建築可否・駐車場は問合せ必須。",
-         ASAHI, lightyellow),
+         "1989年築。1LDKは間取りが小さく賃付けに工夫が必要。OC・水道・下水・再建築可否・駐車場は問合せ必須。※URLは一覧ページ",
+         YES_ASAHI, lightyellow),
         (9,  "千葉県山武市蓮沼イ", "要確認",
          298, "要確認", "不明", "330㎡超（100坪超）", "不明", "不明",
          "4DK", "あり（カーポート）", "平屋", "詳細要確認",
