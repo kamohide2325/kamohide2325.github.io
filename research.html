@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>武田コーポレーション せどりリサーチ</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  body { font-family: 'Meiryo', sans-serif; padding: 20px; background: #f5f5f5; }
+  h1 { color: #1F497D; font-size: 18px; }
+  .btn { background: #1F497D; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; margin-bottom: 20px; }
+  .btn:hover { background: #163a6b; }
+  table { border-collapse: collapse; width: 100%; background: white; font-size: 12px; }
+  th { background: #1F497D; color: white; padding: 8px; text-align: center; white-space: nowrap; }
+  td { border: 1px solid #ddd; padding: 6px 8px; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .ok { background: #C6EFCE !important; }
+  .ng { background: #FFC7CE !important; }
+  .unknown { background: #FFEB9C !important; }
+  .note { font-size: 11px; color: #555; }
+</style>
+</head>
+<body>
+<h1>武田コーポレーション DIYカテゴリ せどりリサーチ（2026年5月5日）</h1>
+<button class="btn" onclick="downloadExcel()">⬇ Excelファイルをダウンロード</button>
+
+<table id="tbl">
+<thead>
+<tr>
+  <th>商品名</th><th>JANコード</th><th>ASIN</th>
+  <th>仕入れ価格(箱)</th><th>入り数</th><th>仕入れ単価</th>
+  <th>Amazon価格(1個)</th><th>FBA手数料</th><th>紹介料(9%)</th>
+  <th>利益</th><th>利益率(%)</th><th>判定</th><th>備考</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<script>
+const data = [
+  ["ワークライト①(WZ-01)","4545244667429","B0719PMFFT",13728,24,572,0,600,0,0,0,"？","Amazon価格要確認。¥1,500以上で利益率10%超"],
+  ["ワークライト②","4545244667436","",15048,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["ワークライト③","4545244674861","",52800,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["ワークライト④(FLLG-12)","4545244670290","",48114,27,1782,2472,600,222,-132,-5.3,"×","Amazon推定価格。赤字"],
+  ["ワークライト⑤(FLLG-15)","4545244670184","",26004,12,2167,3006,600,271,-32,-1.1,"×","Amazon推定価格。ほぼ収支ゼロ"],
+  ["センサーライトMIGNON","4545244694715","",12144,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["スタンドセンサーライト(DUAL-SCL)","4545244695613","B0FT6WDCH5",16500,6,2750,1980,600,178,-1548,-78.2,"×","仕入れ単価がAmazon価格を超過。大幅赤字"],
+  ["ツールボックス GY","4545244674526","",5016,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["ちょこっと踏み台 BK","4545244526870","B07VRCPXB8",8580,6,1430,1738,900,156,-748,-43.0,"×","赤字"],
+  ["スチールBOX カーキS(STB-KH-S)","4545244540111","B082MDMR81",14520,0,0,2780,900,250,0,0,"？","入り数不明。参考Amazon価格¥2,780"],
+  ["スチールBOX サンドM(STB-SD-M)","4545244541286","B082MFKKGC",15972,0,0,2780,900,250,0,0,"？","入り数不明。参考Amazon価格¥2,780"],
+  ["スチールBOX サンドS(STB-SD-S)","4545244541705","B082MDFX67",14520,0,0,0,900,0,0,0,"？","ASIN確認済。Amazon価格未取得"],
+  ["ツールBOX カーキM(TB-KH-M)","4545244542061","B08M5LNTW4",7480,0,0,0,600,0,0,0,"？","ASIN確認済。Amazon価格未取得"],
+  ["ツールBOX カーキS","4545244541811","",9372,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["ツールBOX サンドM","4545244541538","",7480,0,0,0,600,0,0,0,"？","Amazon価格・入り数不明"],
+  ["ツールBOX サンドS","4545244542030","B082MDFX67",9372,0,0,2300,600,207,0,0,"？","Amazon参考価格¥2,300。入り数不明"],
+  ["ギガレッドグローブL 20セット","4545244976798","",17600,20,880,0,600,0,0,0,"？","10P品ASIN:B074KF5P8C。20P品価格未取得"],
+  ["ギガレッドグローブM 20セット","4545244976804","",17600,20,880,0,600,0,0,0,"？","10P品ASIN:B074KHDYQL。20P品価格未取得"],
+  ["アルミステップ台1段","4545244638825","",9570,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["アルミステップ台2段","4545244638832","",14498,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["手すり付きアルミステップ台2段","4545244638092","B08L95BTYK",13200,0,0,0,1200,0,0,0,"？","ASIN確認済(TAL-2-2)。Amazon価格未取得"],
+  ["フォールディングステップ22cm グレージュ","4545244632755","",6512,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["フォールディングステップ22cm ダークグレー","4545244632748","",6512,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["フォールディングステップ32cm グレージュ","4545244632779","",7656,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["フォールディングステップ32cm ダークグレー","4545244632762","",7656,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["ちょこっと踏み台 ダークグレー","4545244654528","",6864,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["フォールディングステップW39cm グレージュ","4545244632793","",7260,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+  ["ちょこっと踏み台 グレージュ","4545244654511","B0CF9B58LH",6864,1,6864,1616,900,145,-6293,-389.0,"×","仕入れ¥6,864 vs Amazon¥1,616。大幅赤字"],
+  ["フォールディングステップW39cm ダークグレー","4545244632786","",7260,0,0,0,900,0,0,0,"？","Amazon掲載確認済。価格未取得"],
+];
+
+const tbody = document.querySelector('#tbl tbody');
+data.forEach(row => {
+  const tr = document.createElement('tr');
+  const 判定 = row[11];
+  if (判定 === '○') tr.className = 'ok';
+  else if (判定 === '×') tr.className = 'ng';
+  else tr.className = 'unknown';
+  row.forEach((val, i) => {
+    const td = document.createElement('td');
+    td.textContent = val;
+    if (i === 12) td.className = 'note';
+    tr.appendChild(td);
+  });
+  tbody.appendChild(tr);
+});
+
+function downloadExcel() {
+  const headers = ["商品名","JANコード","ASIN","仕入れ価格(箱)","入り数","仕入れ単価","Amazon価格(1個)","FBA手数料","紹介料(9%)","利益","利益率(%)","判定","備考"];
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+  ws['!cols'] = [32,18,14,16,8,12,16,10,10,10,10,6,40].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "せどりリサーチ");
+  XLSX.writeFile(wb, "武田コーポレーション_せどりリサーチ.xlsx");
+}
+</script>
+</body>
+</html>
