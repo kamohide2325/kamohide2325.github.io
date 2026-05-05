@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>楽天データ取得ツール</title>
+<style>
+  body { font-family: Meiryo, sans-serif; padding: 20px; background: #f5f5f5; }
+  h1 { color: #bf0000; font-size: 18px; }
+  .btn { background: #bf0000; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; margin: 10px 5px; }
+  .btn:hover { background: #990000; }
+  .btn:disabled { background: #aaa; cursor: not-allowed; }
+  #status { margin: 10px 0; font-size: 14px; color: #333; min-height: 24px; }
+  #result { width: 100%; height: 300px; font-family: monospace; font-size: 11px; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background: white; }
+  .progress { color: #bf0000; font-weight: bold; }
+  .done { color: #006600; font-weight: bold; }
+  .error { color: #cc0000; }
+  #copy-btn { display: none; }
+</style>
+</head>
+<body>
+<h1>ヒマラヤ楽天店 キャンプ用品 データ取得ツール</h1>
+<p>「データ取得開始」ボタンを押すと、全ページのデータを自動取得します。</p>
+<button class="btn" id="fetch-btn" onclick="fetchAll()">データ取得開始</button>
+<button class="btn" id="copy-btn" onclick="copyResult()">結果をコピー</button>
+<div id="status"></div>
+<textarea id="result" placeholder="ここにデータが表示されます..." readonly></textarea>
+
+<script>
+const APP_ID = '9b07f603-1b86-48ad-ab6b-d08005640ac6';
+const ACCESS_KEY = 'pk_GYZOQiIkgr4viwkEy43XE78LIPlm2dhw0bZ23VSePE7';
+
+async function fetchAll() {
+  const btn = document.getElementById('fetch-btn');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  btn.disabled = true;
+  result.value = '';
+
+  const allItems = [];
+  let pageCount = 1;
+
+  for (let page = 1; page <= 19; page++) {
+    status.innerHTML = `<span class="progress">取得中... ${page}ページ目 / 最大19ページ（${allItems.length}件取得済）</span>`;
+
+    try {
+      const url = `https://openapi.rakuten.co.jp/rws/rest/20260401/IchibaItem/Search?applicationId=${APP_ID}&accessKey=${ACCESS_KEY}&shopCode=himaraya&keyword=%E3%82%AD%E3%83%A3%E3%83%B3%E3%83%97&hits=30&page=${page}&format=json`;
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (!json.Items || json.Items.length === 0) break;
+      pageCount = json.pageCount || 19;
+
+      json.Items.forEach(i => {
+        const item = i.Item;
+        allItems.push({
+          name: item.itemName,
+          price: item.itemPrice,
+          code: item.itemCode,
+          pointRate: item.pointRate || 1,
+          itemUrl: item.itemUrl,
+          imageUrl: (item.mediumImageUrls && item.mediumImageUrls[0]) ? item.mediumImageUrls[0].imageUrl : ''
+        });
+      });
+
+      if (page >= pageCount) break;
+      await new Promise(r => setTimeout(r, 300));
+
+    } catch(e) {
+      status.innerHTML += `<br><span class="error">ページ${page}取得エラー: ${e.message}</span>`;
+      break;
+    }
+  }
+
+  status.innerHTML = `<span class="done">完了！ ${allItems.length}件取得しました。下のテキストを全選択してコピーし、Claudeに貼り付けてください。</span>`;
+  result.value = JSON.stringify(allItems, null, 2);
+  document.getElementById('copy-btn').style.display = 'inline-block';
+  btn.disabled = false;
+}
+
+function copyResult() {
+  const result = document.getElementById('result');
+  result.select();
+  document.execCommand('copy');
+  alert('コピーしました！Claudeのチャットに貼り付けてください。');
+}
+</script>
+</body>
+</html>
