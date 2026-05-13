@@ -147,6 +147,57 @@
     }
     .error-list summary { cursor: pointer; font-weight: 600; }
     .error-list ul { margin: 6px 0 0; padding-left: 18px; }
+
+    /* ブックマークレット */
+    .bm-step {
+      display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+    }
+    .bm-num {
+      background: #2563eb; color: white; border-radius: 50%;
+      width: 24px; height: 24px; min-width: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; margin-top: 2px;
+    }
+    .bm-text { font-size: 13px; line-height: 1.7; }
+    .bm-drag {
+      display: inline-block;
+      background: linear-gradient(135deg, #bf0000, #e00);
+      color: white;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: grab;
+      user-select: none;
+      border: 2px dashed rgba(255,255,255,0.5);
+      margin: 6px 0;
+    }
+    .bm-drag:hover { background: linear-gradient(135deg, #a00, #c00); }
+    .page-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .page-link {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #374151;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .page-link:hover { background: #e2e8f0; }
+    .genre-select { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .genre-btn {
+      padding: 5px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      font-size: 12px;
+      background: white;
+      cursor: pointer;
+      color: #374151;
+    }
+    .genre-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
   </style>
 </head>
 <body>
@@ -157,6 +208,47 @@
 </header>
 
 <main>
+
+  <!-- ブックマークレット -->
+  <section class="card">
+    <h2>📌 ステップ1：ブックマークレットを設置する</h2>
+    <div class="bm-step">
+      <div class="bm-num">1</div>
+      <div class="bm-text">
+        下のボタンをブラウザのブックマークバーに<b>ドラッグ＆ドロップ</b>して登録してください。<br>
+        <a id="bmLink" class="bm-drag" href="#">🔍 楽天24 URL抽出</a><br>
+        <span style="font-size:11px;color:#64748b">※ ブックマークバーが表示されていない場合：Chrome は Ctrl+Shift+B (Mac: ⌘+Shift+B)</span>
+      </div>
+    </div>
+    <div class="bm-step">
+      <div class="bm-num">2</div>
+      <div class="bm-text">
+        楽天24の商品一覧ページを開いて、登録したブックマークレットをクリック<br>
+        → そのページの全商品URL（最大約40件）がクリップボードにコピーされます
+      </div>
+    </div>
+    <div class="bm-step">
+      <div class="bm-num">3</div>
+      <div class="bm-text">
+        下の「URLの入力」欄に貼り付けて「JANコードを抽出する」をクリック
+      </div>
+    </div>
+  </section>
+
+  <!-- 楽天24 美容カテゴリ クイックリンク -->
+  <section class="card">
+    <h2>📂 ステップ2：楽天24 カテゴリページを開く</h2>
+    <p style="font-size:13px;color:#475569;margin:0 0 12px">ジャンルを選択してページリンクをクリックしてください</p>
+    <div class="genre-select" id="genreSelect">
+      <button class="genre-btn active" onclick="selectGenre(this,'beauty')">美容・コスメ・香水</button>
+      <button class="genre-btn" onclick="selectGenre(this,'health')">健康・医薬品</button>
+      <button class="genre-btn" onclick="selectGenre(this,'daily')">日用品・生活雑貨</button>
+      <button class="genre-btn" onclick="selectGenre(this,'food')">食品・飲料</button>
+      <button class="genre-btn" onclick="selectGenre(this,'baby')">ベビー・マタニティ</button>
+    </div>
+    <div class="page-links" id="pageLinks"></div>
+    <p style="font-size:11px;color:#94a3b8;margin:8px 0 0">※ ページを開いたらブックマークレットを実行 → 次のページへ進む × 10回でリサーチ完了</p>
+  </section>
 
   <section class="card">
     <h2>URLの入力</h2>
@@ -206,6 +298,50 @@ https://item.rakuten.co.jp/rakuten24/4987035560517/"></textarea>
 </main>
 
 <script>
+  // ---- ブックマークレット生成 ----
+  const bmCode = `(function(){
+    var links=document.querySelectorAll('a[href*="/rakuten24/"]');
+    var urls=[],seen={};
+    links.forEach(function(a){
+      var m=a.href.match(/(https?:\\/\\/[^\\/]+\\/rakuten24\\/\\d+\\/)/);
+      if(m&&!seen[m[1]]){seen[m[1]]=1;urls.push(m[1]);}
+    });
+    if(!urls.length){alert('このページに楽天24の商品URLが見つかりませんでした。\\n商品一覧ページで実行してください。');return;}
+    var text=urls.join('\\n');
+    function done(){alert('\\u2713 '+urls.length+'\\u4ef6\\u306eURL\\u3092\\u30b3\\u30d4\\u30fc\\u3057\\u307e\\u3057\\u305f\\uff01\\nせどりリサーチツールに貼り付けてください。');}
+    if(navigator.clipboard){navigator.clipboard.writeText(text).then(done).catch(fb);}else{fb();}
+    function fb(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);done();}
+  })();`;
+  document.getElementById('bmLink').href = 'javascript:' + encodeURIComponent(bmCode);
+
+  // ---- ジャンル別ページリンク ----
+  const GENRES = {
+    beauty: { label: '美容・コスメ・香水', url: 'https://search.rakuten.co.jp/search/mall/%E7%BE%8E%E5%AE%B9%E3%83%BB%E3%82%B3%E3%82%B9%E3%83%A1%E3%83%BB%E9%A6%99%E6%B0%B4/?sid=208038&p=' },
+    health: { label: '健康・医薬品',       url: 'https://search.rakuten.co.jp/search/mall/%E5%81%A5%E5%BA%B7%E3%83%BB%E5%8C%BB%E8%96%AC%E5%93%81/?sid=208038&p=' },
+    daily:  { label: '日用品・生活雑貨',   url: 'https://search.rakuten.co.jp/search/mall/%E6%97%A5%E7%94%A8%E5%93%81/?sid=208038&p=' },
+    food:   { label: '食品・飲料',         url: 'https://search.rakuten.co.jp/search/mall/%E9%A3%9F%E5%93%81/?sid=208038&p=' },
+    baby:   { label: 'ベビー・マタニティ', url: 'https://search.rakuten.co.jp/search/mall/%E3%83%99%E3%83%93%E3%83%BC%E3%83%BB%E3%83%9E%E3%82%BF%E3%83%8B%E3%83%86%E3%82%A3/?sid=208038&p=' },
+  };
+  let currentGenre = 'beauty';
+
+  function selectGenre(btn, key) {
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentGenre = key;
+    renderPageLinks();
+  }
+
+  function renderPageLinks() {
+    const g = GENRES[currentGenre];
+    const wrap = document.getElementById('pageLinks');
+    wrap.innerHTML = Array.from({length: 10}, (_, i) => {
+      const p = i + 1;
+      return `<a class="page-link" href="${g.url}${p}" target="_blank" rel="noopener">${p}ページ目</a>`;
+    }).join('');
+  }
+  renderPageLinks();
+
+  // ---- JAN解析 ----
   let results = [];
 
   function extractJAN(url) {
