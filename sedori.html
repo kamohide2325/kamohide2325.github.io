@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazonせどりリサーチ ／ 楽天24 JAN抽出ツール</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      color: #1e293b;
+    }
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+      color: white;
+      padding: 20px 24px;
+    }
+    header h1 { margin: 0; font-size: 20px; }
+    header p { margin: 4px 0 0; font-size: 13px; opacity: 0.8; }
+    main { max-width: 960px; margin: 24px auto; padding: 0 16px 40px; }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+    .card h2 { margin: 0 0 14px; font-size: 15px; color: #334155; }
+    .rule-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .rule-box b { color: #1d4ed8; }
+    textarea {
+      width: 100%;
+      height: 140px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    textarea:focus { outline: 2px solid #3b82f6; border-color: transparent; }
+    .btn-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    button {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #f1f5f9; color: #475569; }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:hover { background: #fecaca; }
+    .stats {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .stat-chip {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 13px;
+      color: #475569;
+    }
+    .stat-chip b { color: #1e293b; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f1f5f9; }
+    th {
+      padding: 9px 10px;
+      text-align: left;
+      color: #475569;
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+    tr:hover td { background: #f8fafc; }
+    .jan-code { font-family: monospace; font-weight: 700; color: #1d4ed8; font-size: 14px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-skip { background: #fef3c7; color: #92400e; }
+    .badge-err { background: #fee2e2; color: #dc2626; }
+    .link-btn {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .link-amazon { background: #ff9900; color: #111; }
+    .link-amazon:hover { background: #e68900; }
+    .link-keepa { background: #c33; color: white; }
+    .link-keepa:hover { background: #a32; }
+    .link-rakuten { background: #bf0000; color: white; }
+    .link-rakuten:hover { background: #9a0000; }
+    .url-cell {
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 11px;
+      color: #64748b;
+    }
+    .empty-msg {
+      text-align: center;
+      color: #94a3b8;
+      padding: 40px 0;
+      font-size: 14px;
+    }
+    .table-scroll { overflow-x: auto; }
+    .note { font-size: 12px; color: #64748b; margin-top: 6px; }
+    .error-list {
+      background: #fff7f7;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #b91c1c;
+      margin-top: 12px;
+    }
+    .error-list summary { cursor: pointer; font-weight: 600; }
+    .error-list ul { margin: 6px 0 0; padding-left: 18px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Amazonせどりリサーチ ／ 楽天24 JAN抽出ツール</h1>
+  <p>楽天24のURLからJANコードを直接抽出 → Amazon・Keepaで利益確認</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>URLの入力</h2>
+    <div class="rule-box">
+      <b>JAN取得ルール（URL直接抽出）</b><br>
+      ・<b>13桁コード</b>（例：<code>/rakuten24/4901008318677/</code>）→ JANあり → Keepa対象<br>
+      ・<b>6桁コード</b>（例：<code>/rakuten24/123456/</code>）→ 楽天24独自バンドル → <b>スキップ</b>（Amazonに出品されない）<br>
+      ・コード長が13桁でも6桁でもない場合は「不明」として表示
+    </div>
+    <textarea id="urlInput" placeholder="楽天24の商品URLを1行1件で貼り付けてください。
+例：
+https://item.rakuten.co.jp/rakuten24/4901008318677/
+https://item.rakuten.co.jp/rakuten24/4902430427333/
+https://item.rakuten.co.jp/rakuten24/4987035560517/"></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="analyze()">JANコードを抽出する</button>
+      <button class="btn-secondary" onclick="pasteFromClipboard()">クリップボードから貼り付け</button>
+      <button class="btn-danger" onclick="clearAll()">クリア</button>
+    </div>
+    <p class="note">※ 複数URL同時対応。楽天24以外のURL・空行は自動スキップします。</p>
+  </section>
+
+  <section class="card" id="resultSection" style="display:none">
+    <h2>抽出結果</h2>
+    <div class="stats" id="statsRow"></div>
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn-secondary" onclick="exportCSV()">CSVエクスポート</button>
+      <button class="btn-secondary" onclick="openAllAmazon()">Amazon一括検索（Keepa対象のみ）</button>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>JANコード</th>
+            <th>判定</th>
+            <th>リンク</th>
+            <th>元URL</th>
+          </tr>
+        </thead>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+    <div id="errorSection"></div>
+  </section>
+
+</main>
+
+<script>
+  let results = [];
+
+  function extractJAN(url) {
+    try {
+      const m = url.match(/\/rakuten24\/(\d+)\//);
+      if (!m) return { jan: null, status: 'no_match' };
+      const code = m[1];
+      if (code.length === 13) return { jan: code, status: 'ok' };
+      if (code.length === 6)  return { jan: code, status: 'bundle' };
+      return { jan: code, status: 'unknown' };
+    } catch(e) {
+      return { jan: null, status: 'error' };
+    }
+  }
+
+  function amazonSearchUrl(jan) {
+    return `https://www.amazon.co.jp/s?k=${jan}&i=grocery`;
+  }
+
+  function keepaUrl(jan) {
+    return `https://keepa.com/#!search/5-${jan}`;
+  }
+
+  function analyze() {
+    const raw = document.getElementById('urlInput').value;
+    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+    results = [];
+    const errors = [];
+
+    lines.forEach((url, idx) => {
+      if (!url.includes('rakuten24')) {
+        errors.push({ line: idx + 1, url, reason: '楽天24のURLではない' });
+        return;
+      }
+      const { jan, status } = extractJAN(url);
+      results.push({ no: results.length + 1, url, jan, status });
+    });
+
+    renderResults(errors);
+  }
+
+  function renderResults(errors = []) {
+    const section = document.getElementById('resultSection');
+    const tbody = document.getElementById('resultBody');
+    const statsRow = document.getElementById('statsRow');
+    const errorSection = document.getElementById('errorSection');
+
+    if (results.length === 0 && errors.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+
+    const okCount     = results.filter(r => r.status === 'ok').length;
+    const bundleCount = results.filter(r => r.status === 'bundle').length;
+    const otherCount  = results.filter(r => r.status !== 'ok' && r.status !== 'bundle').length;
+
+    statsRow.innerHTML = [
+      `<span class="stat-chip">合計 <b>${results.length}</b> 件</span>`,
+      `<span class="stat-chip">Keepa対象 <b style="color:#15803d">${okCount}</b> 件</span>`,
+      `<span class="stat-chip">バンドルスキップ <b style="color:#92400e">${bundleCount}</b> 件</span>`,
+      otherCount ? `<span class="stat-chip">不明/エラー <b style="color:#dc2626">${otherCount}</b> 件</span>` : ''
+    ].join('');
+
+    tbody.innerHTML = results.map(r => {
+      let badgeHtml, linkHtml;
+      if (r.status === 'ok') {
+        badgeHtml = `<span class="badge badge-ok">Keepa対象</span>`;
+        linkHtml = `
+          <a class="link-btn link-amazon" href="${amazonSearchUrl(r.jan)}" target="_blank" rel="noopener">Amazon</a>
+          <a class="link-btn link-keepa" href="${keepaUrl(r.jan)}" target="_blank" rel="noopener">Keepa</a>
+          <a class="link-btn link-rakuten" href="${escHtml(r.url)}" target="_blank" rel="noopener">楽天</a>`;
+      } else if (r.status === 'bundle') {
+        badgeHtml = `<span class="badge badge-skip">バンドルスキップ</span>`;
+        linkHtml = `<a class="link-btn link-rakuten" href="${escHtml(r.url)}" target="_blank" rel="noopener">楽天</a>`;
+      } else {
+        badgeHtml = `<span class="badge badge-err">不明</span>`;
+        linkHtml = `<a class="link-btn link-rakuten" href="${escHtml(r.url)}" target="_blank" rel="noopener">楽天</a>`;
+      }
+      return `<tr>
+        <td>${r.no}</td>
+        <td class="jan-code">${r.jan || '—'}</td>
+        <td>${badgeHtml}</td>
+        <td>${linkHtml}</td>
+        <td class="url-cell" title="${escHtml(r.url)}">${escHtml(r.url)}</td>
+      </tr>`;
+    }).join('');
+
+    if (errors.length > 0) {
+      errorSection.innerHTML = `<details class="error-list" style="margin-top:12px">
+        <summary>スキップされた行 (${errors.length}件)</summary>
+        <ul>${errors.map(e => `<li>行${e.line}: ${escHtml(e.url)} — ${e.reason}</li>`).join('')}</ul>
+      </details>`;
+    } else {
+      errorSection.innerHTML = '';
+    }
+  }
+
+  function openAllAmazon() {
+    const okList = results.filter(r => r.status === 'ok');
+    if (okList.length === 0) { alert('Keepa対象の商品がありません。'); return; }
+    if (okList.length > 10) {
+      if (!confirm(`${okList.length}件のAmazon検索タブを開きます。よろしいですか？`)) return;
+    }
+    okList.forEach(r => window.open(amazonSearchUrl(r.jan), '_blank'));
+  }
+
+  function exportCSV() {
+    if (!results.length) { alert('エクスポートするデータがありません。'); return; }
+    const headers = ['No.', 'JANコード', '判定', 'Amazon検索URL', 'Keepa URL', '楽天24 URL'];
+    const statusLabel = { ok: 'Keepa対象', bundle: 'バンドルスキップ', unknown: '不明', no_match: '不一致', error: 'エラー' };
+    const q = v => '"' + String(v || '').replace(/"/g, '""') + '"';
+    const rows = results.map(r => [
+      r.no,
+      r.jan || '',
+      statusLabel[r.status] || r.status,
+      r.status === 'ok' ? amazonSearchUrl(r.jan) : '',
+      r.status === 'ok' ? keepaUrl(r.jan) : '',
+      r.url
+    ].map(q).join(','));
+    const csv = '﻿' + [headers.map(q).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sedori_jan_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  }
+
+  async function pasteFromClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.getElementById('urlInput').value = text;
+    } catch(e) {
+      alert('クリップボードへのアクセスが拒否されました。手動で貼り付けてください（Ctrl+V / Cmd+V）。');
+    }
+  }
+
+  function clearAll() {
+    document.getElementById('urlInput').value = '';
+    document.getElementById('resultSection').style.display = 'none';
+    results = [];
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
+</body>
+</html>
